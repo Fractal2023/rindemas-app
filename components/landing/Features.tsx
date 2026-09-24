@@ -1,0 +1,80 @@
+import type { ReactNode } from "react";
+import { BalanceArt, DebtsArt, KeypadArt, PricesArt, SplitArt } from "./FeatureArt";
+
+function Feature({
+  kicker,
+  title,
+  children,
+  art,
+  flip,
+}: {
+  kicker: string;
+  title: string;
+  children: ReactNode;
+  art: ReactNode;
+  flip?: boolean;
+}) {
+  return (
+    <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+      <div className={flip ? "md:order-2" : undefined}>
+        <p className="text-sm font-semibold text-emerald-700">{kicker}</p>
+        <h3 className="font-display mt-2 text-3xl leading-tight font-extrabold tracking-[-0.02em] text-slate-900 sm:text-4xl">{title}</h3>
+        <div className="mt-4 space-y-3 text-base leading-relaxed text-slate-600">{children}</div>
+      </div>
+      <div className={flip ? "md:order-1" : undefined}>{art}</div>
+    </div>
+  );
+}
+
+export function Features() {
+  return (
+    <section id="funciones" className="scroll-mt-20 bg-white py-20 md:py-28">
+      <div className="mx-auto max-w-6xl space-y-24 px-4 sm:px-6 md:space-y-32">
+        <Feature kicker="Balance semanal" title="Sabes cuánto te queda antes de llegar a la caja." art={<BalanceArt />}>
+          <p>
+            Pon lo que entra a la semana y RindeMás resta cada compra, antojo y abono. La barra cambia a rojo cuando te acercas al
+            límite, y te dice cuánto puedes gastar por día hasta la siguiente semana.
+          </p>
+        </Feature>
+
+        <Feature kicker="Tracker de inflación" title="El jitomate subió 23%. Te enteras antes de pagar." art={<PricesArt />} flip>
+          <p>
+            Cada vez que anotas un producto con su precio, RindeMás lo compara con la última vez que lo compraste. Rojo si subió,
+            verde si bajó, gris si sigue igual.
+          </p>
+          <p>Busca por nombre o filtra por categoría: frutas y verduras, lácteos, tortillería, abarrotes, carnes y más.</p>
+        </Feature>
+
+        <Feature kicker="Deudas, préstamos y tandas" title="Lo que debes y lo que te deben, sin libreta." art={<DebtsArt />}>
+          <p>
+            Registra la tanda de las vecinas, la tarjeta departamental, lo que le prestaste a tu primo o el fiado de la tienda. Cada
+            abono baja el saldo y se refleja en tu disponible de la semana.
+          </p>
+        </Feature>
+
+        <div className="grid gap-10 md:grid-cols-2 md:gap-16">
+          <div>
+            <p className="text-sm font-semibold text-emerald-700">Reportes</p>
+            <h3 className="font-display mt-2 text-3xl leading-tight font-extrabold tracking-[-0.02em] text-slate-900">
+              ¿Necesidad o gusto?
+            </h3>
+            <p className="mt-3 mb-6 text-base leading-relaxed text-slate-600">
+              Ve en qué se fue el dinero de la semana, compáralo con la anterior y revisa tus últimas 4 semanas.
+            </p>
+            <SplitArt />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-emerald-700">Registro rápido</p>
+            <h3 className="font-display mt-2 text-3xl leading-tight font-extrabold tracking-[-0.02em] text-slate-900">
+              Anota una compra en 5 segundos.
+            </h3>
+            <p className="mt-3 mb-6 text-base leading-relaxed text-slate-600">
+              Toca +, escribe el monto y listo. Si pones el producto y la cantidad, el precio por kilo se guarda solo.
+            </p>
+            <KeypadArt />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

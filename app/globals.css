@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Derived from the Tailwind color variables so themes (lib/themes.ts) re-skin them too. */
+  --app-bg: var(--color-slate-50);
+  --outer-bg: var(--color-slate-200);
+  --foreground: var(--color-slate-900);
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  /* Landing page only (loaded in app/page.tsx). */
+  --font-display: var(--font-bricolage), var(--font-jakarta), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--outer-bg);
 }
 
 body {
-  background: var(--background);
+  background: var(--outer-bg);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 639px) {
+  html,
+  body {
+    background: var(--app-bg);
+  }
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-emerald-600);
+  outline-offset: 2px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Landing: printed receipt ---------- */
+
+.receipt-paper {
+  --zig: 10px;
+  background: #fffef8;
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 30px 60px -30px rgba(15, 23, 42, 0.35);
+  /* Torn zig-zag bottom edge */
+  -webkit-mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--zig) * 2) 100%;
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--zig) * 2) 100%;
+}
+
+.receipt-barcode {
+  background: repeating-linear-gradient(
+    90deg,
+    #1e293b 0 2px,
+    transparent 2px 4px,
+    #1e293b 4px 5px,
+    transparent 5px 8px,
+    #1e293b 8px 11px,
+    transparent 11px 13px
+  );
+}
+
+@keyframes receipt-print {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes receipt-line-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.receipt-print {
+  animation: receipt-print 1.6s steps(24, end) both;
+  animation-delay: 0.2s;
+}
+
+.receipt-line {
+  animation: receipt-line-in 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .receipt-print,
+  .receipt-line {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
