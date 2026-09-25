@@ -148,3 +148,55 @@ export function KeypadArt() {
     </div>
   );
 }
+
+export function ExtrasArt() {
+  const rows = [
+    { label: "Venta de tamales", tag: "Venta", amount: "+$850", tone: "text-emerald-600" },
+    { label: "Bono de fin de mes", tag: "Bono", amount: "+$1,200", tone: "text-emerald-600" },
+    { label: "Consulta y medicinas", tag: "Salud", amount: "-$650", tone: "text-rose-600" },
+    { label: "Plomero: fuga en la cocina", tag: "Reparaciones", amount: "-$380", tone: "text-rose-600" },
+  ];
+  return (
+    <div className={card}>
+      <p className="text-sm font-bold text-slate-900">Extras del mes</p>
+      <ul className="mt-3 divide-y divide-slate-100">
+        {rows.map((r) => (
+          <li key={r.label} className="flex items-center justify-between gap-3 py-2.5">
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium text-slate-700">{r.label}</span>
+              <span className="text-[11px] text-slate-400">{r.tag}</span>
+            </span>
+            <span className={`font-mono text-sm font-semibold tabular-nums ${r.tone}`}>{r.amount}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+        Tu despensa y tus reportes de necesidad vs. gusto no cambian.
+      </p>
+    </div>
+  );
+}
+
+export function LoansArt() {
+  return (
+    <div className={card}>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-bold text-slate-900">Celular a quincenas</p>
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 uppercase">3/12 cuotas</span>
+      </div>
+      <p className="mt-1 text-xs text-slate-500">12 quincenas · cuota de $400</p>
+      <div className="mt-3 flex items-end justify-between">
+        <p className="font-mono text-2xl font-semibold text-slate-900 tabular-nums">
+          $3,600 <span className="text-xs font-normal text-slate-400">restante de $4,800</span>
+        </p>
+      </div>
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-rose-100">
+        <div className="h-full w-1/4 rounded-full bg-emerald-500" />
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="rounded-xl bg-amber-100 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800">Pago vence en 3 días</span>
+        <span className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">Registrar pago de cuota</span>
+      </div>
+    </div>
+  );
+}

@@ -69,6 +69,6 @@ La prueba gratis se activa localmente (se guarda en `rindemas_data.settings.plan
 
 - `lib/localList.ts` — lista persistida genérica (una clave de LocalStorage por lista).
 - `lib/extras.ts` — ingresos extra (`rindemas_extra_incomes`: venta, trabajo independiente, bono, regalo) y gastos extra / imprevistos (`rindemas_extra_expenses`: salud, emergencia, reparaciones, gusto ocasional). Suman / restan al disponible de la semana; **no** entran en los reportes de necesidad vs. gusto, para no distorsionar el promedio de despensa. Vista `/app/extras` con el resumen "Gastos Ocasionales del Mes".
-- `lib/loans.ts` — préstamos a plazos (`rindemas_loans`): total con intereses, plazo en meses o quincenas, día límite; cuota = total ÷ plazo; "Registrar pago de cuota" (resta del disponible) y "Deshacer último pago". Vista `/app/prestamos`.
+- `lib/loans.ts` — préstamos a plazos (`rindemas_loans`; Plan Gratuito: 1 activo, PRO: ilimitados + recordatorios en la app cuando un pago vence en ≤3 días): total con intereses, plazo en meses o quincenas, día límite; cuota = total ÷ plazo; "Registrar pago de cuota" (resta del disponible) y "Deshacer último pago". Vista `/app/prestamos`.
 - Registro rápido: tipos "Ingreso" y "Extra". En el dictado (PRO), `lib/voice/parseIntent.ts` clasifica "ingreso extra", "bono", "vendí…" como entrada de dinero y "gasto extra", "emergencia", "consulta", "plomero"… como gasto extra.
 - Todos los ítems tienen editar y eliminar visibles. Se incluyen en el respaldo JSON, en "Cargar datos de ejemplo" y en "Eliminar definitivamente".

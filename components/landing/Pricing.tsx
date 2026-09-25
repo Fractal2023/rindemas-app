@@ -9,6 +9,8 @@ const FREE = [
   "Balance semanal y disponible por día",
   "Tracker de precios con subidas y bajadas",
   "Deudas, préstamos, tandas y fiados",
+  "Ingresos extra y gastos imprevistos",
+  "1 préstamo a plazos activo",
   "Reportes de necesidad vs. gusto",
   "Bloqueo con PIN, respaldo y borrado",
   "Funciona sin internet",
@@ -19,6 +21,7 @@ const PRO = [
   "Registro rápido por voz, sin tocar la pantalla",
   "Alertas antes de que se cobre una prueba gratis, con link para cancelar",
   "Predicción de lo que se te va a acabar y sugerencias de compra",
+  "Préstamos a plazos ilimitados, con recordatorios de pago en la app",
 ];
 
 const PRO_SOON = ["Alertas de precio personalizadas", "Metas de ahorro por quincena", "Reportes para descargar en PDF y Excel"];
@@ -32,6 +35,7 @@ const COMPARISON: { group: string; rows: { feature: string; hint?: string; free:
       { feature: "Balance semanal y disponible por día", free: true, pro: true },
       { feature: "Tracker de inflación del súper", free: true, pro: true },
       { feature: "Deudas, préstamos, tandas y fiados", free: true, pro: true },
+      { feature: "Ingresos extra y gastos imprevistos", hint: "Gestión básica, sin límite de registros", free: true, pro: true },
       { feature: "Reportes de necesidad vs. gusto", free: true, pro: true },
       { feature: "Registro rápido con teclado", free: true, pro: true },
       { feature: "Bloqueo con PIN, respaldo y borrado", free: true, pro: true },
@@ -62,6 +66,20 @@ const COMPARISON: { group: string; rows: { feature: string; hint?: string; free:
         pro: true,
         highlight: true,
       },
+      {
+        feature: "Préstamos y créditos a plazos",
+        hint: "Cuota automática, pagado vs. restante",
+        free: "1 activo",
+        pro: "Ilimitados",
+        highlight: true,
+      },
+      {
+        feature: "Recordatorios de fechas de pago",
+        hint: "Aviso en la app cuando un pago vence en 3 días o menos",
+        free: false,
+        pro: true,
+        highlight: true,
+      },
       { feature: "Temas visuales", free: "1", pro: "5" },
       { feature: "Alertas de precio, metas de ahorro y reportes descargables", free: false, pro: "soon" },
     ],
@@ -73,7 +91,7 @@ function CellValue({ value }: { value: Cell }) {
   if (value === false) return <Minus className="mx-auto size-4 text-slate-300" aria-label="No incluido" />;
   if (value === "soon")
     return <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-500 uppercase">Pronto</span>;
-  return <span className="font-mono text-sm font-semibold text-slate-700">{value}</span>;
+  return <span className="text-xs leading-tight font-bold text-slate-700">{value}</span>;
 }
 
 export function Pricing() {

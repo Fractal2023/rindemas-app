@@ -6,16 +6,20 @@ import { useState } from "react";
 import { celebrate } from "@/lib/celebrate";
 import {
   deleteLoan,
+  dueLabel,
   installmentAmount,
   isPaidOff,
   nextDueDate,
   paidAmount,
   paidInstallments,
   payInstallment,
+  paymentAlert,
   remainingAmount,
   undoLastPayment,
   type Loan,
 } from "@/lib/loans";
+import { planStatus } from "@/lib/plan";
+import { useFinanceState } from "@/lib/store";
 import { cn, formatMXN, initials, shortDate } from "@/lib/utils";
 
 export function LoanCard({ loan, onEdit }: { loan: Loan; onEdit: () => void }) {
@@ -27,6 +31,9 @@ export function LoanCard({ loan, onEdit }: { loan: Loan; onEdit: () => void }) {
   const cuota = installmentAmount(loan);
   const progress = loan.total > 0 ? Math.min(1, paid / loan.total) : 0;
   const unit = loan.frequency === "mensual" ? "mensual" : "quincenal";
+  const { settings } = useFinanceState();
+  // Payment reminders are a RindeMás PRO feature.
+  const alert = planStatus(settings.plan).isPro ? paymentAlert(loan) : null;
 
   const pay = () => {
     const res = payInstallment(loan.id);
@@ -74,6 +81,17 @@ export function LoanCard({ loan, onEdit }: { loan: Loan; onEdit: () => void }) {
           </button>
         </div>
       </div>
+
+      {alert && alert.level !== "ok" && (
+        <p
+          className={cn(
+            "mt-3 rounded-2xl px-3 py-2 text-xs font-semibold",
+            alert.level === "critical" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-800",
+          )}
+        >
+          {alert.level === "critical" ? "🔴" : "🟡"} {dueLabel(alert.daysLeft)} · {shortDate(alert.due.toISOString())}
+        </p>
+      )}
 
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>

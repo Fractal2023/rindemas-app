@@ -20,7 +20,7 @@ const FAQ = [
   },
   {
     q: "¿Qué incluye RindeMás PRO?",
-    a: `Registro de compras por voz, el gestor de suscripciones con alertas antes de que se cobre una prueba gratis, la predicción de lo que se te va a acabar con sugerencias de compra y 4 temas visuales. Cuesta $${PRO_PRICE_MXN} MXN al mes, con ${TRIAL_DAYS} días de prueba gratis.`,
+    a: `Registro de compras por voz, el gestor de suscripciones con alertas antes de que se cobre una prueba gratis, la predicción de lo que se te va a acabar con sugerencias de compra, préstamos a plazos ilimitados con recordatorios de pago (en Gratuito es 1 préstamo activo) y 4 temas visuales. Cuesta $${PRO_PRICE_MXN} MXN al mes, con ${TRIAL_DAYS} días de prueba gratis.`,
   },
   {
     q: "¿Cómo sabe RindeMás si un producto subió?",

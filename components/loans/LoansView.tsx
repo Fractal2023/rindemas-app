@@ -1,10 +1,13 @@
 "use client";
 
 import { AnimatePresence } from "framer-motion";
-import { Landmark, Plus } from "lucide-react";
+import { Crown, Landmark, Plus } from "lucide-react";
 import { useState } from "react";
+import { useAppActions } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { installmentAmount, isPaidOff, loans, paidAmount, remainingAmount, type Loan } from "@/lib/loans";
+import { planStatus } from "@/lib/plan";
+import { useFinanceState } from "@/lib/store";
+import { FREE_ACTIVE_LOANS, installmentAmount, isPaidOff, loans, paidAmount, remainingAmount, type Loan } from "@/lib/loans";
 import { formatMXN } from "@/lib/utils";
 import { LoanCard } from "./LoanCard";
 import { LoanFormSheet } from "./LoanFormSheet";
@@ -20,7 +23,14 @@ export function LoansView() {
   // Monthly equivalent: a quincenal installment is paid twice a month.
   const monthly = active.reduce((a, l) => a + installmentAmount(l) * (l.frequency === "quincenal" ? 2 : 1), 0);
 
-  const openNew = () => setSheet((s) => ({ open: true, session: s.session + 1, editing: undefined }));
+  const { settings } = useFinanceState();
+  const { openProSheet } = useAppActions();
+  const isPro = planStatus(settings.plan).isPro;
+  // Plan Gratuito: one active loan. Existing loans are never removed, only new ones are gated.
+  const atFreeLimit = !isPro && active.length >= FREE_ACTIVE_LOANS;
+
+  const openNew = () =>
+    atFreeLimit ? openProSheet(undefined, "loans") : setSheet((s) => ({ open: true, session: s.session + 1, editing: undefined }));
   const openEdit = (loan: Loan) => setSheet((s) => ({ open: true, session: s.session + 1, editing: loan }));
 
   return (
@@ -33,7 +43,7 @@ export function LoansView() {
             onClick={openNew}
             className="flex shrink-0 items-center gap-1 rounded-2xl bg-emerald-600 px-3.5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
           >
-            <Plus className="size-4" /> Nuevo
+            {atFreeLimit ? <Crown className="size-4" /> : <Plus className="size-4" />} Nuevo
           </button>
         }
       />
@@ -54,6 +64,20 @@ export function LoansView() {
             </div>
           </div>
         </section>
+
+        {!isPro && (
+          <button
+            type="button"
+            onClick={() => openProSheet(undefined, "loans")}
+            className="flex w-full items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-left text-xs text-emerald-900 ring-1 ring-emerald-100"
+          >
+            <Crown className="size-4 shrink-0 text-emerald-600" />
+            <span>
+              Plan Gratuito: {FREE_ACTIVE_LOANS} préstamo activo. Con <b>RindeMás PRO</b>, préstamos ilimitados y recordatorios de
+              pago.
+            </span>
+          </button>
+        )}
 
         {items.length === 0 && (
           <div className="rounded-3xl bg-white px-6 py-10 text-center ring-1 ring-slate-100">

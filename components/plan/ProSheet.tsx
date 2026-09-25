@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, CalendarClock, Check, Crown, Mic, ShieldCheck, Sparkles } from "lucide-react";
+import { Brain, CalendarClock, Check, Crown, Landmark, Mic, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { celebrate } from "@/lib/celebrate";
@@ -25,6 +25,10 @@ const BENEFITS = [
     title: "Análisis predictivo de insumos y sugerencias de compra",
     text: "Aprende cada cuánto compras cada producto y te arma la lista antes de que se acabe.",
   },
+  {
+    title: "Préstamos ilimitados, con recordatorios de pago",
+    text: "Registra todos tus préstamos a plazos; te avisamos en la app cuando un pago vence en 3 días o menos.",
+  },
 ];
 
 /** Listed last, after "Próximamente", together with the theme previews. */
@@ -42,7 +46,7 @@ const COMING_SOON = [
 ];
 
 /** Which PRO feature brought the user here (highlighted at the top). */
-export type ProReason = "voice" | "subscriptions" | "replenishment";
+export type ProReason = "voice" | "subscriptions" | "replenishment" | "loans";
 
 interface ProSheetProps {
   open: boolean;
@@ -164,6 +168,18 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
           <p className="text-sm text-slate-700">
             Con PRO ves cuánto pagas en <b className="text-slate-900">suscripciones</b> y te avisamos antes de que una prueba gratis
             se convierta en cobro.
+          </p>
+        </div>
+      )}
+
+      {reason === "loans" && (
+        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white">
+            <Landmark className="size-5" />
+          </span>
+          <p className="text-sm text-slate-700">
+            El plan Gratuito incluye 1 préstamo activo. Con PRO registras <b className="text-slate-900">todos los que tengas</b> y te
+            recordamos cada fecha de pago.
           </p>
         </div>
       )}

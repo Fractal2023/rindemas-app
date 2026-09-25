@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BalanceArt, DebtsArt, KeypadArt, PricesArt, SplitArt } from "./FeatureArt";
+import { BalanceArt, DebtsArt, ExtrasArt, KeypadArt, LoansArt, PricesArt, SplitArt } from "./FeatureArt";
 
 function Feature({
   kicker,
@@ -74,6 +74,33 @@ export function Features() {
             <KeypadArt />
           </div>
         </div>
+
+        <Feature
+          kicker="💰 Ingresos extra e imprevistos"
+          title="Control de Ingresos Extras y Gastos Imprevistos."
+          art={<ExtrasArt />}
+          flip
+        >
+          <p>
+            Anota entradas adicionales, como bonos, ventas o trabajos por tu cuenta, y los gastos de emergencia en salud o
+            reparaciones, sin alterar tu presupuesto fijo.
+          </p>
+          <p>
+            Se suman o restan a tu disponible de la semana, y aparte ves tus “Gastos Ocasionales del Mes”, para que no se mezclen con
+            la despensa.
+          </p>
+        </Feature>
+
+        <Feature kicker="💳 Préstamos a plazos" title="Gestor de Préstamos y Créditos a Plazos." art={<LoansArt />}>
+          <p>
+            Registra el total a pagar con intereses, el plazo en meses o quincenas y el día de pago. RindeMás calcula la cuota y lleva
+            la cuenta de lo pagado y lo que falta.
+          </p>
+          <p>
+            Cada pago de cuota se descuenta de tu disponible. El plan Gratuito incluye 1 préstamo activo; con PRO son ilimitados y te
+            recordamos en la app cuando se acerca la fecha de pago.
+          </p>
+        </Feature>
       </div>
     </section>
   );

@@ -51,24 +51,71 @@ export const paidInstallments = (l: Loan) => Math.min(l.installments, Math.floor
 
 const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
 
-/** Next due date from today (today counts). Quincenal loans are due on dueDay and dueDay + 15. */
-export function nextDueDate(l: Loan, now = new Date()): Date {
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
+/** All due dates from two months back to three months ahead, sorted. */
+function dueDatesAround(l: Loan, today: Date): Date[] {
   const days = l.frequency === "quincenal" ? [l.dueDay, l.dueDay + 15] : [l.dueDay];
-  for (let add = 0; add < 3; add++) {
+  const dates: Date[] = [];
+  for (let add = -2; add <= 3; add++) {
     const first = new Date(today.getFullYear(), today.getMonth() + add, 1);
     const y = first.getFullYear();
     const m = first.getMonth();
-    const candidates = days
-      .map((d) => (d > 31 ? d - 30 : d))
-      .map((d) => new Date(y, m, Math.min(d, daysInMonth(y, m))))
-      .sort((a, b) => a.getTime() - b.getTime());
-    const hit = candidates.find((d) => d >= today);
-    if (hit) return hit;
+    for (const d of days) {
+      const day = d > 31 ? d - 30 : d;
+      dates.push(new Date(y, m, Math.min(day, daysInMonth(y, m))));
+    }
   }
-  return today;
+  return dates.sort((a, b) => a.getTime() - b.getTime());
 }
+
+const startOfDay = (d: Date) => {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
+};
+
+/**
+ * Next payment date (today counts). Quincenal loans are due on dueDay and 15
+ * days later. If an installment was already paid during the current cycle
+ * (after the previous due date), that due date counts as covered and the
+ * following one is returned.
+ */
+export function nextDueDate(l: Loan, now = new Date()): Date {
+  const today = startOfDay(now);
+  const dates = dueDatesAround(l, today);
+  const i = dates.findIndex((d) => d >= today);
+  if (i === -1) return today;
+  const previous = dates[i - 1];
+  const last = l.payments.length ? startOfDay(new Date(l.payments[l.payments.length - 1].date)) : null;
+  const coveredThisCycle = !!last && !!previous && last > previous;
+  return coveredThisCycle && dates[i + 1] ? dates[i + 1] : dates[i];
+}
+
+export type PaymentAlert = "ok" | "warning" | "critical";
+
+/** Reminder level for the next payment: 3 days left = yellow, 2/1/0 days = red. */
+export function paymentAlert(l: Loan, now = new Date()): { level: PaymentAlert; daysLeft: number; due: Date } | null {
+  if (isPaidOff(l)) return null;
+  const due = nextDueDate(l, now);
+  const daysLeft = Math.round((due.getTime() - startOfDay(now).getTime()) / 86_400_000);
+  return { level: daysLeft <= 2 ? "critical" : daysLeft === 3 ? "warning" : "ok", daysLeft, due };
+}
+
+/** Loans whose next payment is 3 days away or closer. */
+export function upcomingLoanPayments(items: Loan[], now = new Date()) {
+  return items
+    .map((loan) => ({ loan, alert: paymentAlert(loan, now) }))
+    .filter((x): x is { loan: Loan; alert: NonNullable<ReturnType<typeof paymentAlert>> } => !!x.alert && x.alert.level !== "ok")
+    .sort((a, b) => a.alert.daysLeft - b.alert.daysLeft);
+}
+
+export function dueLabel(daysLeft: number) {
+  if (daysLeft === 0) return "Pago vence hoy";
+  if (daysLeft === 1) return "Pago vence mañana";
+  return `Pago vence en ${daysLeft} días`;
+}
+
+/** Plan Gratuito includes one active (not yet paid off) loan. */
+export const FREE_ACTIVE_LOANS = 1;
 
 /** Every loan payment, for the weekly balance. */
 export const allLoanPayments = (items: Loan[]) => items.flatMap((l) => l.payments);
