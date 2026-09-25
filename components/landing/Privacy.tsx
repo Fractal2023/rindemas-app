@@ -27,7 +27,8 @@ export function Privacy() {
           ))}
         </ul>
         <p className="mt-6 max-w-2xl text-sm text-slate-500">
-          Como todo vive en tu dispositivo, si borras los datos del navegador o cambias de celular, tus registros no se mueven solos.
+          Las funciones PRO siguen la misma regla: tus suscripciones y las predicciones de consumo se calculan y guardan en tu
+          celular. Como todo vive en tu dispositivo, si borras los datos del navegador o cambias de celular, tus registros no se mueven solos.
           Descarga un respaldo de vez en cuando desde Ajustes. Si usas el dictado por voz y tu navegador no puede reconocer voz
           dentro del celular, el audio lo transcribe el servicio de voz del navegador por internet; la app te lo avisa antes.
         </p>

@@ -3,6 +3,7 @@ import { BrandLogo } from "@/components/ui/BrandLogo";
 
 const LINKS = [
   { href: "#funciones", label: "Funciones" },
+  { href: "#pro", label: "PRO" },
   { href: "#privacidad", label: "Privacidad" },
   { href: "#planes", label: "Planes" },
   { href: "#preguntas", label: "Preguntas" },

@@ -19,6 +19,10 @@ const FAQ = [
     a: "Sí, con RindeMás PRO. Toca el micrófono y di, por ejemplo, “dos jabones de 30 pesos”: RindeMás llena el producto, la cantidad y el precio para que solo confirmes. Si tu navegador puede reconocer voz dentro del celular (Chrome reciente, después de descargar el español una vez), funciona sin internet y el audio no sale de tu teléfono. Si no, usa el dictado en línea del navegador, que necesita internet; la app te lo avisa antes.",
   },
   {
+    q: "¿Qué incluye RindeMás PRO?",
+    a: `Registro de compras por voz, el gestor de suscripciones con alertas antes de que se cobre una prueba gratis, la predicción de lo que se te va a acabar con sugerencias de compra y 4 temas visuales. Cuesta $${PRO_PRICE_MXN} MXN al mes, con ${TRIAL_DAYS} días de prueba gratis.`,
+  },
+  {
     q: "¿Cómo sabe RindeMás si un producto subió?",
     a: "Compara el precio que anotas con el que registraste la vez anterior para ese mismo producto. Entre más compras anotes, más completo es tu historial de precios.",
   },

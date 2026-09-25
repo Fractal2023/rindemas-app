@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { BellRing, CalendarClock, Check, Cloud, Crown, FileDown, Mic, Palette, PiggyBank, Sparkles } from "lucide-react";
+import { BellRing, Brain, CalendarClock, Check, Cloud, Crown, FileDown, Mic, Palette, PiggyBank, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { celebrate } from "@/lib/celebrate";
@@ -11,18 +11,40 @@ import { getTheme, THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/lib/types";
 import { ThemeSwatch } from "./ThemeSwatch";
 
+/** Available today with PRO. */
 const BENEFITS = [
-  { icon: Mic, title: "Registro de compras por voz", text: "Dicta “dos jabones de 30 pesos” y el formulario se llena solo" },
-  { icon: CalendarClock, title: "Gestor de suscripciones", text: "Te avisamos antes de que una prueba gratis se cobre" },
-  { icon: Palette, title: "4 temas visuales exclusivos", text: "Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta" },
-  { icon: BellRing, title: "Alertas de precio personalizadas", text: "Avisos cuando tus productos clave suban" },
-  { icon: PiggyBank, title: "Metas de ahorro por quincena", text: "Aparta para la colegiatura, el gas o las vacaciones" },
-  { icon: FileDown, title: "Reportes para descargar", text: "Tu historial mensual en PDF y Excel" },
-  { icon: Cloud, title: "Respaldo y familia compartida", text: "Tus datos seguros y sincronizados entre celulares" },
+  {
+    icon: Mic,
+    title: "Registro rápido por voz, sin tocar la pantalla",
+    text: "Dices “dos jabones de 30 pesos” y el formulario se llena solo.",
+  },
+  {
+    icon: CalendarClock,
+    title: "Alertas de vencimiento y links para cancelar a tiempo",
+    text: "Te avisamos antes de que una prueba gratis se cobre, con el link para cancelarla.",
+  },
+  {
+    icon: Brain,
+    title: "Análisis predictivo de insumos y sugerencias de compra",
+    text: "Aprende cada cuánto compras cada producto y te arma la lista antes de que se acabe.",
+  },
+  {
+    icon: Palette,
+    title: "Temas visuales exclusivos e interfaz sin restricciones",
+    text: "Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta, con todas las funciones desbloqueadas.",
+  },
+];
+
+/** On the roadmap: shown as "Próximamente", never as available. */
+const COMING_SOON = [
+  { icon: BellRing, title: "Alertas de precio personalizadas" },
+  { icon: PiggyBank, title: "Metas de ahorro por quincena" },
+  { icon: FileDown, title: "Reportes para descargar en PDF y Excel" },
+  { icon: Cloud, title: "Respaldo y familia compartida" },
 ];
 
 /** Which PRO feature brought the user here (highlighted at the top). */
-export type ProReason = "voice" | "subscriptions";
+export type ProReason = "voice" | "subscriptions" | "replenishment";
 
 interface ProSheetProps {
   open: boolean;
@@ -148,6 +170,17 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
         </div>
       )}
 
+      {reason === "replenishment" && (
+        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white">
+            <Brain className="size-5" />
+          </span>
+          <p className="text-sm text-slate-700">
+            Con PRO sabes <b className="text-slate-900">qué se te va a acabar</b> esta semana y lo agregas a tu compra con un toque.
+          </p>
+        </div>
+      )}
+
       {wanted && (
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
           <ThemeSwatch theme={wanted} className="w-16 shrink-0" />
@@ -176,6 +209,24 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
           </motion.li>
         ))}
       </ul>
+
+      <div className="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
+        <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Próximamente en PRO</p>
+        <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+          {COMING_SOON.map((b) => (
+            <li key={b.title} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <b.icon className="size-3.5 shrink-0" />
+              {b.title}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="flex items-start gap-2 text-xs text-slate-500">
+        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+        Igual que en el plan Gratuito, tus gastos, suscripciones y predicciones se calculan y guardan en tu celular. La voz se
+        procesa en el celular cuando tu navegador lo permite; si no, te avisamos antes de usar el dictado en línea.
+      </p>
 
       <div className="flex justify-center gap-1.5">
         {THEMES.filter((t) => t.tier === "pro").map((t) => (

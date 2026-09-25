@@ -1,11 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Plus, ShoppingCart, X } from "lucide-react";
+import { Check, Crown, Plus, ShoppingCart, X } from "lucide-react";
 import { useAppActions } from "@/components/layout/AppShell";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { runningLow, runOutLabel } from "@/lib/replenishment";
-import { addToShoppingList, removeFromShoppingList } from "@/lib/store";
+import { planStatus } from "@/lib/plan";
+import { addToShoppingList, removeFromShoppingList, useFinanceState } from "@/lib/store";
 import type { Product, ShoppingItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +21,59 @@ interface Props {
   shoppingList: ShoppingItem[];
 }
 
-/** Dashboard card: products predicted to run out soon + today's shopping list. */
-export function RunningLowCard({ products, shoppingList }: Props) {
+/** Dashboard card: products predicted to run out soon + today's shopping list. PRO only. */
+export function RunningLowCard(props: Props) {
+  const { settings } = useFinanceState();
+  return planStatus(settings.plan).isPro ? <RunningLowPro {...props} /> : <RunningLowTeaser products={props.products} />;
+}
+
+/** Plan Gratuito: shows how many products the model would flag, without revealing which. */
+function RunningLowTeaser({ products }: { products: Product[] }) {
+  const { openProSheet } = useAppActions();
+  const count = runningLow(products).length;
+  if (count === 0) return null;
+
+  return (
+    <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.12)] ring-1 ring-slate-100">
+      <div className="flex items-center gap-2.5">
+        <div className="grid size-10 place-items-center rounded-2xl bg-amber-100 text-amber-600">
+          <ShoppingCart className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="flex items-center gap-1.5 font-bold text-slate-900">
+            Por terminarse esta semana
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              <Crown className="size-2.5" /> PRO
+            </span>
+          </h2>
+          <p className="text-xs text-slate-500">
+            {count} {count === 1 ? "producto podría acabarse" : "productos podrían acabarse"} pronto
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-2 blur-[3px] select-none" aria-hidden>
+        {["bg-rose-100", "bg-amber-100"].map((bg, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5">
+            <span className={cn("size-9 rounded-xl", bg)} />
+            <span className="h-3 flex-1 rounded-full bg-slate-200" />
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-sm text-slate-600">
+        RindeMás aprende cada cuánto compras cada producto y te avisa antes de que se acabe, con tu lista de compra lista.
+      </p>
+      <button
+        type="button"
+        onClick={() => openProSheet(undefined, "replenishment")}
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700"
+      >
+        <Crown className="size-4" /> Ver qué se me va a acabar
+      </button>
+    </section>
+  );
+}
+
+function RunningLowPro({ products, shoppingList }: Props) {
   const { openQuickAdd } = useAppActions();
   const low = runningLow(products);
   const onList = new Set(shoppingList.map((i) => i.productId));

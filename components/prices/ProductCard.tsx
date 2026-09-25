@@ -7,7 +7,8 @@ import { useState } from "react";
 import { PriceBadge } from "@/components/ui/PriceBadge";
 import { frequencyLabel, runOutLabel, stockStatus } from "@/lib/replenishment";
 import { priceVariation } from "@/lib/selectors";
-import { recordPrice } from "@/lib/store";
+import { planStatus } from "@/lib/plan";
+import { recordPrice, useFinanceState } from "@/lib/store";
 import { UNIT_SHORT, type Product } from "@/lib/types";
 import { cn, formatMXN, relativeDay, shortDate } from "@/lib/utils";
 import { Sparkline } from "./Sparkline";
@@ -29,7 +30,9 @@ const STOCK_STYLE = {
 
 export function ProductCard({ product, expanded, onToggle }: { product: Product; expanded: boolean; onToggle: () => void }) {
   const v = priceVariation(product);
-  const stock = stockStatus(product.replenish);
+  const { settings } = useFinanceState();
+  // Purchase-rhythm predictions are a RindeMás PRO feature.
+  const stock = planStatus(settings.plan).isPro ? stockStatus(product.replenish) : { status: "unknown" as const };
   const [newPrice, setNewPrice] = useState("");
   const parsed = Number(newPrice);
 

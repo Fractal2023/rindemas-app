@@ -1,5 +1,6 @@
-import { Check, Crown } from "lucide-react";
+import { Check, Crown, Minus } from "lucide-react";
 import Link from "next/link";
+import { Fragment } from "react";
 import { PRO_PRICE_MXN, TRIAL_DAYS } from "@/lib/plan";
 import { THEMES } from "@/lib/themes";
 import { ThemeSwatch } from "@/components/plan/ThemeSwatch";
@@ -10,18 +11,70 @@ const FREE = [
   "Deudas, préstamos, tandas y fiados",
   "Reportes de necesidad vs. gusto",
   "Bloqueo con PIN, respaldo y borrado",
-  "Tema Esmeralda",
+  "Funciona sin internet",
 ];
 
 const PRO: { text: string; soon?: boolean }[] = [
   { text: "Todo lo del plan Gratuito" },
-  { text: "Registro de compras por voz" },
-  { text: "Gestor de suscripciones con aviso antes de que se cobre una prueba gratis" },
-  { text: "4 temas exclusivos: Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta" },
-  { text: "Alertas de precio personalizadas", soon: true },
-  { text: "Metas de ahorro por quincena", soon: true },
-  { text: "Reportes para descargar en PDF y Excel", soon: true },
+  { text: "🎙️ Registro rápido por voz, sin tocar la pantalla" },
+  { text: "🔔 Alertas antes de que se cobre una prueba gratis, con link para cancelar" },
+  { text: "🧠 Predicción de lo que se te va a acabar y sugerencias de compra" },
+  { text: "4 temas exclusivos e interfaz sin restricciones" },
+  { text: "Alertas de precio, metas de ahorro y reportes descargables", soon: true },
 ];
+
+type Cell = boolean | "soon" | string;
+
+const COMPARISON: { group: string; rows: { feature: string; hint?: string; free: Cell; pro: Cell; highlight?: boolean }[] }[] = [
+  {
+    group: "Lo esencial",
+    rows: [
+      { feature: "Balance semanal y disponible por día", free: true, pro: true },
+      { feature: "Tracker de inflación del súper", free: true, pro: true },
+      { feature: "Deudas, préstamos, tandas y fiados", free: true, pro: true },
+      { feature: "Reportes de necesidad vs. gusto", free: true, pro: true },
+      { feature: "Registro rápido con teclado", free: true, pro: true },
+      { feature: "Bloqueo con PIN, respaldo y borrado", free: true, pro: true },
+      { feature: "Funciona sin internet", free: true, pro: true },
+    ],
+  },
+  {
+    group: "Exclusivo de PRO",
+    rows: [
+      {
+        feature: "🎙️ Registro de compras por voz, manos libres",
+        hint: "Sin internet y sin que el audio salga del celular en navegadores compatibles",
+        free: false,
+        pro: true,
+        highlight: true,
+      },
+      {
+        feature: "🔔 Gestor de suscripciones y alertas anti-cobros",
+        hint: "Control de pruebas gratis con semáforo y link directo para cancelar",
+        free: false,
+        pro: true,
+        highlight: true,
+      },
+      {
+        feature: "🧠 Motor predictivo de reabastecimiento",
+        hint: "Semáforo de consumo y lista de compra sugerida",
+        free: false,
+        pro: true,
+        highlight: true,
+      },
+      { feature: "Temas visuales", free: "1", pro: "5" },
+      { feature: "Alertas de precio, metas de ahorro y reportes descargables", free: false, pro: "soon" },
+    ],
+  },
+];
+
+function CellValue({ value }: { value: Cell }) {
+  if (value === true) return <Check className="mx-auto size-5 text-emerald-600" aria-label="Incluido" />;
+  if (value === false) return <Minus className="mx-auto size-4 text-slate-300" aria-label="No incluido" />;
+  if (value === "soon")
+    return <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-500 uppercase">Pronto</span>;
+  return <span className="font-mono text-sm font-semibold text-slate-700">{value}</span>;
+}
 
 export function Pricing() {
   return (
@@ -32,7 +85,9 @@ export function Pricing() {
           <h2 className="font-display mt-2 text-4xl leading-tight font-extrabold tracking-[-0.02em] text-slate-900 sm:text-5xl">
             Lo esencial es gratis.
           </h2>
-          <p className="mt-4 text-lg text-slate-600">PRO es para quien quiere más: temas visuales y herramientas extra.</p>
+          <p className="mt-4 text-lg text-slate-600">
+            PRO te ahorra tiempo y sustos: anota hablando, sabe qué se te va a acabar y te avisa antes de que te cobren una prueba.
+          </p>
         </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2">
@@ -97,6 +152,57 @@ export function Pricing() {
             </Link>
             <p className="mt-2 text-center text-xs text-white/75">Actívala desde Ajustes, dentro de la app.</p>
           </div>
+        </div>
+
+        {/* Free vs PRO comparison */}
+        <div className="mt-16">
+          <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] text-slate-900 sm:text-3xl">Gratuito vs. PRO</h3>
+          <div className="mt-6 overflow-hidden rounded-3xl ring-1 ring-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th scope="col" className="px-4 py-3 font-semibold sm:px-6">
+                    Función
+                  </th>
+                  <th scope="col" className="w-20 px-2 py-3 text-center font-semibold sm:w-28">
+                    Gratuito
+                  </th>
+                  <th scope="col" className="w-20 px-2 py-3 text-center font-bold text-emerald-700 sm:w-28">
+                    PRO
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((section) => (
+                  <Fragment key={section.group}>
+                    <tr className="border-t border-slate-200 bg-white">
+                      <th colSpan={3} scope="colgroup" className="px-4 pt-5 pb-2 text-xs font-bold tracking-wide text-slate-400 uppercase sm:px-6">
+                        {section.group}
+                      </th>
+                    </tr>
+                    {section.rows.map((row) => (
+                      <tr key={row.feature} className={row.highlight ? "bg-emerald-50/60" : "bg-white"}>
+                        <th scope="row" className="border-t border-slate-100 px-4 py-3 font-medium text-slate-800 sm:px-6">
+                          <span className={row.highlight ? "font-bold text-slate-900" : undefined}>{row.feature}</span>
+                          {row.hint && <span className="mt-0.5 block text-xs font-normal text-slate-500">{row.hint}</span>}
+                        </th>
+                        <td className="border-t border-slate-100 px-2 py-3 text-center">
+                          <CellValue value={row.free} />
+                        </td>
+                        <td className="border-t border-slate-100 px-2 py-3 text-center">
+                          <CellValue value={row.pro} />
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-sm text-slate-500">
+            En los dos planes tus datos financieros se quedan en tu celular: no hay cuentas, servidores ni bases de datos con tu
+            información.
+          </p>
         </div>
       </div>
     </section>

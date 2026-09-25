@@ -7,6 +7,7 @@ import { Hero } from "@/components/landing/Hero";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { Pricing } from "@/components/landing/Pricing";
 import { Privacy } from "@/components/landing/Privacy";
+import { ProFeatures } from "@/components/landing/ProFeatures";
 
 const display = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
 const mono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500", "600"] });
@@ -25,6 +26,7 @@ export default function LandingPage() {
       <main>
         <Hero />
         <Features />
+        <ProFeatures />
         <Privacy />
         <Pricing />
         <Faq />
