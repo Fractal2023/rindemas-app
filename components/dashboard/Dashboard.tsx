@@ -37,7 +37,13 @@ export function Dashboard() {
     <div className="space-y-5 px-5 pt-6">
       <header className="space-y-5">
         <div className="flex items-center justify-between gap-3">
-          <BrandLogo />
+          <Link
+            href="/"
+            aria-label="RindeMás · ir a la página principal"
+            className="-m-1.5 min-w-0 cursor-pointer rounded-2xl p-1.5 transition hover:bg-slate-100/80 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none active:scale-[0.97]"
+          >
+            <BrandLogo />
+          </Link>
           <button
             onClick={openSettings}
             className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-slate-50"
