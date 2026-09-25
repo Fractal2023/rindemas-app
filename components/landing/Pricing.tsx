@@ -14,14 +14,14 @@ const FREE = [
   "Funciona sin internet",
 ];
 
-const PRO: { text: string; soon?: boolean }[] = [
-  { text: "Todo lo del plan Gratuito" },
-  { text: "🎙️ Registro rápido por voz, sin tocar la pantalla" },
-  { text: "🔔 Alertas antes de que se cobre una prueba gratis, con link para cancelar" },
-  { text: "🧠 Predicción de lo que se te va a acabar y sugerencias de compra" },
-  { text: "4 temas exclusivos e interfaz sin restricciones" },
-  { text: "Alertas de precio, metas de ahorro y reportes descargables", soon: true },
+const PRO = [
+  "Todo lo del plan Gratuito",
+  "Registro rápido por voz, sin tocar la pantalla",
+  "Alertas antes de que se cobre una prueba gratis, con link para cancelar",
+  "Predicción de lo que se te va a acabar y sugerencias de compra",
 ];
+
+const PRO_SOON = ["Alertas de precio personalizadas", "Metas de ahorro por quincena", "Reportes para descargar en PDF y Excel"];
 
 type Cell = boolean | "soon" | string;
 
@@ -124,25 +124,34 @@ export function Pricing() {
               <span className="font-display text-5xl font-extrabold">${PRO_PRICE_MXN}</span>
               <span className="text-sm text-white/80">MXN al mes</span>
             </p>
-            <ul className="mt-6 flex-1 space-y-3 text-sm">
+            <ul className="mt-6 space-y-3 text-sm">
               {PRO.map((f) => (
-                <li key={f.text} className="flex gap-2.5">
+                <li key={f} className="flex gap-2.5">
                   <Check className="mt-0.5 size-4 shrink-0 text-emerald-200" />
-                  <span>
-                    {f.text}
-                    {f.soon && (
-                      <span className="ml-2 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-                        Próximamente
-                      </span>
-                    )}
-                  </span>
+                  {f}
                 </li>
               ))}
             </ul>
-            <div className="mt-6 flex gap-2" aria-hidden>
-              {THEMES.filter((t) => t.tier === "pro").map((t) => (
-                <ThemeSwatch key={t.id} theme={t} className="w-14 ring-1 ring-white/30" />
-              ))}
+            <div className="mt-5 rounded-2xl bg-white/10 p-3.5">
+              <p className="text-[11px] font-bold tracking-wide text-white/70 uppercase">Próximamente</p>
+              <ul className="mt-2 space-y-1.5 text-xs text-white/80">
+                {PRO_SOON.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <span className="mt-1.5 size-1 shrink-0 rounded-full bg-white/60" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-5 flex flex-1 flex-col">
+              <p className="flex gap-2.5 text-sm">
+                <Check className="mt-0.5 size-4 shrink-0 text-emerald-200" />4 temas exclusivos e interfaz sin restricciones
+              </p>
+              <div className="mt-3 flex gap-2" aria-hidden>
+                {THEMES.filter((t) => t.tier === "pro").map((t) => (
+                  <ThemeSwatch key={t.id} theme={t} className="w-14 ring-1 ring-white/30" />
+                ))}
+              </div>
             </div>
             <Link
               href="/app"

@@ -184,7 +184,8 @@ const listeners = new Set<() => void>();
 
 function ensure(): SubscriptionsState {
   if (!state) {
-    state = storage.load() ?? { version: 1, items: demoSubscriptions() };
+    // First visit: empty list. Example subscriptions are opt-in (Ajustes → "Cargar datos de ejemplo").
+    state = storage.load() ?? { version: 1, items: [] };
     storage.save(state);
   }
   return state;
@@ -239,6 +240,18 @@ function patch(id: string, changes: Partial<Subscription>) {
   set((s) => ({ ...s, items: s.items.map((x) => (x.id === id ? { ...x, ...changes } : x)) }));
 }
 
+/** Edits an existing subscription (fix amount, dates, cancellation info…). */
+export function updateSubscription(id: string, input: NewSubscription) {
+  patch(id, {
+    ...input,
+    name: input.name.trim(),
+    amount: round2(input.amount),
+    cancelInfo: input.cancelInfo?.trim() || undefined,
+    cancelBy: input.cancelBy || undefined,
+    billingMonth: input.frequency === "anual" ? input.billingMonth : undefined,
+  });
+}
+
 export const cancelSubscription = (id: string) => patch(id, { status: "cancelada", cancelledAt: new Date().toISOString() });
 export const reactivateSubscription = (id: string) => patch(id, { status: "activa", cancelledAt: undefined });
 /** The user decided to keep a trial: it becomes a regular active subscription. */
@@ -248,8 +261,8 @@ export function deleteSubscription(id: string) {
   set((s) => ({ ...s, items: s.items.filter((x) => x.id !== id) }));
 }
 
-/** Used by "Restablecer datos demo". */
-export function resetSubscriptionsToDemo() {
+/** Used by Ajustes → "Cargar datos de ejemplo". */
+export function loadDemoSubscriptions() {
   set(() => ({ version: 1, items: demoSubscriptions() }));
 }
 

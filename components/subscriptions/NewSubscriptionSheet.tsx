@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Sheet } from "@/components/ui/Sheet";
 import { Switch } from "@/components/ui/Switch";
-import { addSubscription, toYmd, type SubscriptionFrequency } from "@/lib/subscriptions";
+import { addSubscription, toYmd, updateSubscription, type Subscription, type SubscriptionFrequency } from "@/lib/subscriptions";
 
 const MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -15,24 +15,37 @@ const field =
   "w-full rounded-2xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-400";
 const label = "mb-1 block text-xs font-semibold text-slate-500";
 
-export function NewSubscriptionSheet({ open, session, onClose }: { open: boolean; session: number; onClose: () => void }) {
+interface SheetProps {
+  open: boolean;
+  session: number;
+  onClose: () => void;
+  /** When set, the form edits this subscription instead of creating one. */
+  editing?: Subscription;
+}
+
+export function NewSubscriptionSheet({ open, session, onClose, editing }: SheetProps) {
   return (
-    <Sheet open={open} onClose={onClose} title="Nueva suscripción" subtitle="Streaming, música, apps, membresías…">
-      <NewSubscriptionForm key={session} onClose={onClose} />
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={editing ? "Editar suscripción" : "Nueva suscripción"}
+      subtitle={editing ? editing.name : "Streaming, música, apps, membresías…"}
+    >
+      <NewSubscriptionForm key={session} onClose={onClose} editing={editing} />
     </Sheet>
   );
 }
 
-function NewSubscriptionForm({ onClose }: { onClose: () => void }) {
+function NewSubscriptionForm({ onClose, editing }: { onClose: () => void; editing?: Subscription }) {
   const now = new Date();
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [frequency, setFrequency] = useState<SubscriptionFrequency>("mensual");
-  const [billingDay, setBillingDay] = useState(String(now.getDate()));
-  const [billingMonth, setBillingMonth] = useState(String(now.getMonth() + 1));
-  const [isTrial, setIsTrial] = useState(false);
-  const [cancelBy, setCancelBy] = useState("");
-  const [cancelInfo, setCancelInfo] = useState("");
+  const [name, setName] = useState(editing?.name ?? "");
+  const [amount, setAmount] = useState(editing ? String(editing.amount) : "");
+  const [frequency, setFrequency] = useState<SubscriptionFrequency>(editing?.frequency ?? "mensual");
+  const [billingDay, setBillingDay] = useState(String(editing?.billingDay ?? now.getDate()));
+  const [billingMonth, setBillingMonth] = useState(String(editing?.billingMonth ?? now.getMonth() + 1));
+  const [isTrial, setIsTrial] = useState(editing?.isTrial ?? false);
+  const [cancelBy, setCancelBy] = useState(editing?.cancelBy ?? "");
+  const [cancelInfo, setCancelInfo] = useState(editing?.cancelInfo ?? "");
 
   const day = Number(billingDay);
   const errors = {
@@ -55,7 +68,7 @@ function NewSubscriptionForm({ onClose }: { onClose: () => void }) {
       onSubmit={(e) => {
         e.preventDefault();
         if (!valid) return;
-        addSubscription({
+        const data = {
           name,
           amount: Number(amount),
           frequency,
@@ -64,7 +77,9 @@ function NewSubscriptionForm({ onClose }: { onClose: () => void }) {
           isTrial,
           cancelBy: cancelBy || undefined,
           cancelInfo,
-        });
+        };
+        if (editing) updateSubscription(editing.id, data);
+        else addSubscription(data);
         onClose();
       }}
     >
@@ -171,7 +186,7 @@ function NewSubscriptionForm({ onClose }: { onClose: () => void }) {
         disabled={!valid}
         className="w-full rounded-2xl bg-emerald-600 py-3.5 font-bold text-white transition hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400"
       >
-        Guardar suscripción
+        {editing ? "Guardar cambios" : "Guardar suscripción"}
       </button>
     </form>
   );

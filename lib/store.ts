@@ -2,11 +2,11 @@
 
 import { useSyncExternalStore } from "react";
 import { canUseTheme, FREE_PLAN, planStatus, TRIAL_DAYS } from "./plan";
-import { createSeedState } from "./seed";
+import { createDemoState, createEmptyState } from "./seed";
 import { createLocalStorageAdapter, STORAGE_KEY } from "./storage";
 import { withReplenishment } from "./replenishment";
 import { hashPin, markSessionUnlocked, newSalt } from "./security";
-import { resetSubscriptionsToDemo, subscriptionsForExport, wipeSubscriptions } from "./subscriptions";
+import { loadDemoSubscriptions, subscriptionsForExport, wipeSubscriptions } from "./subscriptions";
 import { DEFAULT_THEME, getTheme, isProTheme } from "./themes";
 import type {
   Debt,
@@ -71,8 +71,8 @@ function ensureState(): FinanceState {
       storage.save(state);
       legacyStorage.clear();
     } else {
-      // Empty storage: populate with demo data so the app never starts blank.
-      state = createSeedState();
+      // First visit: start empty. Example data is opt-in from Ajustes.
+      state = createEmptyState();
       storage.save(state);
     }
   }
@@ -202,6 +202,39 @@ export function addExpense(input: {
   });
 }
 
+/**
+ * Fixes a product's details. `price`, when given, corrects the latest recorded
+ * price (a capture error), instead of adding a new price record.
+ */
+export function updateProduct(
+  productId: string,
+  changes: { name: string; unit: Unit; category: ProductCategory; price?: number },
+) {
+  setState((s) => ({
+    ...s,
+    products: s.products.map((p) => {
+      if (p.id !== productId) return p;
+      let history = p.history;
+      if (changes.price !== undefined && changes.price > 0) {
+        const price = round2(changes.price);
+        history = history.length
+          ? [...history.slice(0, -1), { ...history[history.length - 1], price }]
+          : [{ price, date: new Date().toISOString() }];
+      }
+      return { ...p, name: changes.name.trim() || p.name, unit: changes.unit, category: changes.category, history };
+    }),
+  }));
+}
+
+/** Removes a product from the tracker. Past purchases stay in the activity history. */
+export function deleteProduct(productId: string) {
+  setState((s) => ({
+    ...s,
+    products: s.products.filter((p) => p.id !== productId),
+    shoppingList: s.shoppingList.filter((i) => i.productId !== productId),
+  }));
+}
+
 export function recordPrice(productId: string, price: number) {
   setState((s) => ({
     ...s,
@@ -323,13 +356,13 @@ export function updateSettings(patch: Partial<Settings>) {
   setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
 }
 
-/** Restores demo data but keeps the user's plan and theme. */
-export function resetToDemo() {
+/** Replaces everything with example data, keeping the user's plan, theme and PIN. */
+export function loadDemoData() {
   setState((s) => {
-    const seed = createSeedState();
-    return { ...seed, settings: { ...seed.settings, theme: s.settings.theme, plan: s.settings.plan } };
+    const demo = createDemoState();
+    return { ...demo, settings: { ...demo.settings, theme: s.settings.theme, plan: s.settings.plan, security: s.settings.security } };
   });
-  resetSubscriptionsToDemo();
+  loadDemoSubscriptions();
 }
 
 /* ---------- Privacy & security ---------- */
@@ -380,14 +413,7 @@ export function wipeAllData() {
   legacyStorage.clear();
   wipeSubscriptions();
   markSessionUnlocked(false);
-  setState(() => ({
-    version: 1,
-    settings: { familyName: "Mi familia", weeklyIncome: 0, theme: DEFAULT_THEME, plan: FREE_PLAN },
-    products: [],
-    transactions: [],
-    debts: [],
-    shoppingList: [],
-  }));
+  setState(() => createEmptyState());
 }
 
 /* ---------- Theme & plan ---------- */

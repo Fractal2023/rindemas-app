@@ -136,8 +136,19 @@ export function PriceTracker() {
 
         {filtered.length === 0 && (
           <div className="rounded-3xl bg-white px-6 py-10 text-center ring-1 ring-slate-100">
-            <p className="font-semibold text-slate-700">No encontramos productos</p>
-            <p className="mt-1 text-sm text-slate-500">Prueba con otra búsqueda o agrega uno nuevo.</p>
+            {products.length === 0 ? (
+              <>
+                <p className="font-semibold text-slate-700">Aún no sigues ningún producto</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Se agregan solos cuando anotas una compra con el nombre del producto, o toca “+ Producto”.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-slate-700">No encontramos productos</p>
+                <p className="mt-1 text-sm text-slate-500">Prueba con otra búsqueda o agrega uno nuevo.</p>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ExternalLink, FileText, RotateCcw, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
   cancelSubscription,
@@ -17,6 +17,7 @@ import {
   type TrialAlert,
 } from "@/lib/subscriptions";
 import { cn, formatMXN, initials, shortDate } from "@/lib/utils";
+import { NewSubscriptionSheet } from "./NewSubscriptionSheet";
 
 const ALERT_STYLE: Record<TrialAlert, { ring: string; pill: string }> = {
   ok: { ring: "ring-slate-100", pill: "bg-emerald-50 text-emerald-700" },
@@ -36,6 +37,7 @@ function billingLabel(s: Subscription) {
 export function SubscriptionCard({ sub }: { sub: Subscription }) {
   const [showNote, setShowNote] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editSheet, setEditSheet] = useState({ open: false, session: 0 });
   const cancelled = sub.status === "cancelada";
   const alert = trialAlert(sub);
   const style = sub.isTrial && !cancelled ? ALERT_STYLE[alert.level] : ALERT_STYLE.ok;
@@ -139,36 +141,58 @@ export function SubscriptionCard({ sub }: { sub: Subscription }) {
           </button>
         )}
         {cancelled && (
-          <>
-            <button
-              type="button"
-              onClick={() => reactivateSubscription(sub.id)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-            >
-              <RotateCcw className="size-3.5" /> Reactivar
-            </button>
-            {confirmDelete ? (
-              <span className="flex items-center gap-2 text-xs">
-                <button type="button" onClick={() => setConfirmDelete(false)} className="font-semibold text-slate-500">
-                  No
-                </button>
-                <button type="button" onClick={() => deleteSubscription(sub.id)} className="font-bold text-rose-600">
-                  Sí, eliminar
-                </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                aria-label={`Eliminar ${sub.name}`}
-                className="grid size-8 place-items-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            )}
-          </>
+          <button
+            type="button"
+            onClick={() => reactivateSubscription(sub.id)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            <RotateCcw className="size-3.5" /> Reactivar
+          </button>
         )}
+        <span className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setEditSheet((e) => ({ open: true, session: e.session + 1 }))}
+            aria-label={`Editar ${sub.name}`}
+            className="grid size-8 place-items-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          >
+            <Pencil className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            aria-label={`Eliminar ${sub.name}`}
+            className="grid size-8 place-items-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </span>
       </div>
+
+      {confirmDelete && (
+        <div className="mt-3 flex items-center gap-2 rounded-2xl bg-rose-50 px-3 py-2.5 ring-1 ring-rose-100">
+          <p className="flex-1 text-xs text-rose-800">
+            ¿Eliminar <b>{sub.name}</b>? No se puede deshacer.
+          </p>
+          <button type="button" onClick={() => setConfirmDelete(false)} className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => deleteSubscription(sub.id)}
+            className="rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-rose-700"
+          >
+            Eliminar
+          </button>
+        </div>
+      )}
+
+      <NewSubscriptionSheet
+        open={editSheet.open}
+        session={editSheet.session}
+        editing={sub}
+        onClose={() => setEditSheet((e) => ({ ...e, open: false }))}
+      />
     </motion.li>
   );
 }

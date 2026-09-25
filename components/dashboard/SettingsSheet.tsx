@@ -8,7 +8,7 @@ import { PrivacySecurityCard } from "@/components/security/PrivacySecurityCard";
 import { BRAND } from "@/components/ui/BrandLogo";
 import { Sheet } from "@/components/ui/Sheet";
 import { planStatus, PRO_PRICE_MXN } from "@/lib/plan";
-import { resetToDemo, updateSettings, useFinanceState } from "@/lib/store";
+import { loadDemoData, updateSettings, useFinanceState } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function SettingsSheet({ open, session, onClose }: { open: boolean; session: number; onClose: () => void }) {
@@ -101,7 +101,9 @@ function SettingsForm({ onClose }: { onClose: () => void }) {
 
       <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
         <p className="text-sm font-semibold text-slate-800">Datos de ejemplo</p>
-        <p className="mt-0.5 text-xs text-slate-500">Borra todo lo registrado y vuelve a cargar los datos de demostración.</p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          ¿Quieres ver cómo se ve la app con datos? Carga una familia de ejemplo. Reemplaza lo que tengas registrado.
+        </p>
         {confirmReset ? (
           <div className="mt-3 flex gap-2">
             <button
@@ -112,12 +114,12 @@ function SettingsForm({ onClose }: { onClose: () => void }) {
             </button>
             <button
               onClick={() => {
-                resetToDemo();
+                loadDemoData();
                 onClose();
               }}
               className="flex-1 rounded-xl bg-rose-600 py-2 text-sm font-bold text-white"
             >
-              Sí, restablecer
+              Sí, reemplazar
             </button>
           </div>
         ) : (
@@ -125,7 +127,7 @@ function SettingsForm({ onClose }: { onClose: () => void }) {
             onClick={() => setConfirmReset(true)}
             className="mt-3 flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-100"
           >
-            <RotateCcw className="size-4" /> Restablecer datos demo
+            <RotateCcw className="size-4" /> Cargar datos de ejemplo
           </button>
         )}
       </div>

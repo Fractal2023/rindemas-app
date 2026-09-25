@@ -23,9 +23,9 @@ npm run dev
 - `lib/replenishment.ts` — (PRO) predicción de reabastecimiento: intervalo promedio entre compras por producto y estado `ok` / `warning` (<3 días) / `critical` (fecha cumplida). Se guarda en `product.replenish` y se recalcula al registrar o borrar una compra. La lista "compra de hoy" vive en `shoppingList`
 - `lib/themes.ts` — 5 temas (Esmeralda gratis; Oscuro Neón, Terracota Cálido, Azul Ejecutivo y Morado Menta PRO). Cada tema redefine las variables de color de Tailwind (`--color-emerald-*`, `--color-slate-*`, …), así los componentes no cambian
 - `lib/plan.ts` — estado del plan (Gratuito / PRO con prueba de 7 días, $59 MXN/mes) y tema efectivo
-- `lib/seed.ts` — datos demo (se cargan si `localStorage` está vacío; relativos a la fecha actual)
+- `lib/seed.ts` — `createEmptyState()` (lo que ve un usuario nuevo: la app vacía) y `createDemoState()` (familia de ejemplo, opcional; fechas relativas a hoy)
 
-Para volver a los datos demo: Inicio → ⚙️ Ajustes → "Restablecer datos demo".
+La app arranca vacía. Para ver datos de ejemplo: Inicio → ⚙️ Ajustes → "Cargar datos de ejemplo" (reemplaza lo registrado; conserva plan, tema y PIN).
 
 ## Plan PRO
 
@@ -58,4 +58,9 @@ La prueba gratis se activa localmente (se guarda en `rindemas_data.settings.plan
 
 - Ruta `/app/suscripciones` (acceso desde Inicio y Deudas). En Plan Gratuito muestra un paywall que abre `ProSheet` con `reason="subscriptions"`.
 - `lib/subscriptions.ts` — store propio en LocalStorage con la clave `rindemas_subscriptions`: alta, cancelar, reactivar, "me la quedo" (la prueba pasa a activa) y eliminar. Resumen mensual/anual, próximo cobro y semáforo de pruebas gratis (faltan 3 días = amarillo; 2, 1 o 0 = rojo). "Ir a cancelar" usa el link o la nota guardada.
-- Se incluye en el respaldo JSON, en "Restablecer datos demo" y en "Eliminar definitivamente". El service worker precachea la ruta (`VERSION = "v2"`).
+- Arranca vacío; se incluye en el respaldo JSON, en "Cargar datos de ejemplo" y en "Eliminar definitivamente". Cada suscripción se puede editar y eliminar. El service worker precachea la ruta (`VERSION = "v2"`).
+
+## Editar y eliminar
+
+- Productos del tracker (Precios): lápiz para editar nombre, unidad, categoría y **corregir** el último precio capturado (no crea un registro nuevo); bote de basura siempre visible, con confirmación. Las compras pasadas se conservan.
+- Suscripciones: "Editar" y eliminar en todas las tarjetas (activas, en prueba y canceladas).

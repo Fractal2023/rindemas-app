@@ -54,10 +54,17 @@ export function WeeklyBalanceCard({ summary, onEditIncome }: Props) {
         >
           {formatMXN(available)}
         </motion.p>
-        {!over && daysLeft > 0 && (
-          <p className="mt-0.5 text-sm text-white/80">
-            Puedes gastar ~<b className="text-white">{formatMXN(Math.floor(perDay))}</b> por día
-          </p>
+        {budget === 0 ? (
+          <button type="button" onClick={onEditIncome} className="mt-0.5 text-left text-sm text-white/90 underline-offset-2 hover:underline">
+            Empieza por poner tu ingreso semanal →
+          </button>
+        ) : (
+          !over &&
+          daysLeft > 0 && (
+            <p className="mt-0.5 text-sm text-white/80">
+              Puedes gastar ~<b className="text-white">{formatMXN(Math.floor(perDay))}</b> por día
+            </p>
+          )
         )}
 
         {/* Progress bar: tap to see breakdown */}

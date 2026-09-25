@@ -4,11 +4,23 @@ import { DEFAULT_THEME } from "./themes";
 import type { Debt, FinanceState, Product, ProductCategory, Transaction, TxKind, Unit } from "./types";
 import { round2, startOfWeek } from "./utils";
 
+/** What a first-time user starts with: no records at all. */
+export function createEmptyState(): FinanceState {
+  return {
+    version: 1,
+    settings: { familyName: "Mi familia", weeklyIncome: 0, theme: DEFAULT_THEME, plan: FREE_PLAN },
+    products: [],
+    transactions: [],
+    debts: [],
+    shoppingList: [],
+  };
+}
+
 /**
- * Realistic demo data for a Mexican family. All dates are relative to `now`
- * so the app always opens with "this week" and "last week" populated.
+ * Optional example data for a Mexican family (Ajustes → "Cargar datos de ejemplo").
+ * All dates are relative to `now` so "this week" and "last week" are populated.
  */
-export function createSeedState(now = new Date()): FinanceState {
+export function createDemoState(now = new Date()): FinanceState {
   const weekStart = startOfWeek(now);
   const todayIndex = (now.getDay() + 6) % 7;
 
