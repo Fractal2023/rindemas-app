@@ -1,17 +1,19 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, IceCreamCone, Minus, Plus, Receipt, ShoppingBasket, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
+import { Check, IceCreamCone, Mic, Minus, Plus, Receipt, ShoppingBasket, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AmountDisplay, NumericKeypad } from "@/components/ui/NumericKeypad";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
+import { VoiceCapture } from "@/components/voice/VoiceCapture";
 import { celebrate } from "@/lib/celebrate";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { priceVariation } from "@/lib/selectors";
 import { addExpense, payDebt, useFinanceState } from "@/lib/store";
 import { GUSTO_CATEGORIES, PRODUCT_CATEGORIES, UNITS, type ProductCategory, type Unit } from "@/lib/types";
 import { cn, formatMXN, formatPct, normalize } from "@/lib/utils";
+import type { ParsedPurchase } from "@/lib/voice/parsePurchase";
 
 export type QuickAddType = "despensa" | "gusto" | "abono";
 
@@ -23,19 +25,37 @@ const TYPES: { value: QuickAddType; label: string; icon: LucideIcon; active: str
 
 const UNIT_LABEL: Record<Unit, string> = { kg: "Kg", pieza: "Pieza", litro: "Litro", paquete: "Paquete" };
 
+/** One-line confirmation shown after dictation. */
+function voiceSummary(p: ParsedPurchase) {
+  if (!p.total) return "No escuché el precio: escríbelo con el teclado.";
+  if (p.unitPrice && p.quantity !== 1) {
+    return `${p.quantity} × ${formatMXN(p.unitPrice)} = ${formatMXN(p.total)}. Revisa y toca Registrar.`;
+  }
+  return "Revisa los datos y toca Registrar.";
+}
+
 interface QuickAddSheetProps {
   open: boolean;
   onClose: () => void;
   initialType: QuickAddType;
   /** Pre-fills the product (name, unit, category) for a despensa purchase. */
   initialProductId?: string;
+  /** Open straight into voice dictation (from the mic button in /app). */
+  startWithVoice?: boolean;
   session: number;
 }
 
-export function QuickAddSheet({ open, onClose, initialType, initialProductId, session }: QuickAddSheetProps) {
+export function QuickAddSheet({ open, onClose, initialType, initialProductId, startWithVoice, session }: QuickAddSheetProps) {
   return (
     <Sheet open={open} onClose={onClose} title="Registro rápido" subtitle="Anota tu compra en segundos">
-      <QuickAddForm key={session} initialType={initialType} initialProductId={initialProductId} active={open} onDone={onClose} />
+      <QuickAddForm
+        key={session}
+        initialType={initialType}
+        initialProductId={initialProductId}
+        startWithVoice={startWithVoice}
+        active={open}
+        onDone={onClose}
+      />
     </Sheet>
   );
 }
@@ -43,11 +63,12 @@ export function QuickAddSheet({ open, onClose, initialType, initialProductId, se
 interface QuickAddFormProps {
   initialType: QuickAddType;
   initialProductId?: string;
+  startWithVoice?: boolean;
   active: boolean;
   onDone: () => void;
 }
 
-function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAddFormProps) {
+function QuickAddForm({ initialType, initialProductId, startWithVoice, active, onDone }: QuickAddFormProps) {
   const { products, debts } = useFinanceState();
   const initialProduct = products.find((p) => p.id === initialProductId);
   const payableDebts = useMemo(() => debts.filter((d) => d.direction === "debo" && d.pending > 0), [debts]);
@@ -62,6 +83,20 @@ function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAd
   const [description, setDescription] = useState("");
   const [debtId, setDebtId] = useState(payableDebts[0]?.id ?? "");
   const [saved, setSaved] = useState<string | null>(null);
+  const [voiceOpen, setVoiceOpen] = useState(!!startWithVoice);
+  const [voiceNote, setVoiceNote] = useState<ParsedPurchase | null>(null);
+
+  /** Fills the form from a dictated sentence; the user only reviews and saves. */
+  const applyVoice = (p: ParsedPurchase) => {
+    setVoiceOpen(false);
+    setVoiceNote(p);
+    setType("despensa");
+    if (p.productName) setProductName(p.productName);
+    if (p.unit) setUnit(p.unit);
+    setQty(p.quantity > 0 ? p.quantity : 1);
+    if (p.category && (PRODUCT_CATEGORIES as readonly string[]).includes(p.category)) setCategory(p.category as ProductCategory);
+    if (p.total) setAmount(String(p.total));
+  };
 
   const value = Number(amount) || 0;
   const typedKey = normalize(productName);
@@ -132,7 +167,31 @@ function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAd
         })}
       </div>
 
-      <AmountDisplay value={amount} className="py-4" />
+      <div className="relative">
+        <AmountDisplay value={amount} className="py-4" />
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setVoiceOpen(true)}
+          className="absolute top-1/2 right-0 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-700"
+          aria-label="Registrar por voz"
+        >
+          <Mic className="size-5" />
+        </motion.button>
+      </div>
+
+      {voiceNote && (
+        <div className="mb-3 flex items-start gap-2 rounded-2xl bg-emerald-50 px-3 py-2.5 text-sm ring-1 ring-emerald-100">
+          <Mic className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold text-emerald-900">“{voiceNote.transcript}”</p>
+            <p className="text-xs text-emerald-800/80">{voiceSummary(voiceNote)}</p>
+          </div>
+          <button type="button" onClick={() => setVoiceNote(null)} aria-label="Ocultar" className="text-emerald-700/70">
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
 
       {/* Context fields per type */}
       <AnimatePresence mode="wait" initial={false}>
@@ -309,7 +368,7 @@ function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAd
         </motion.div>
       </AnimatePresence>
 
-      <NumericKeypad value={amount} onChange={setAmount} captureKeyboard={active && !saved} />
+      <NumericKeypad value={amount} onChange={setAmount} captureKeyboard={active && !saved && !voiceOpen} />
 
       <motion.button
         type="button"
@@ -323,6 +382,10 @@ function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAd
       >
         {canSave ? `Registrar ${formatMXN(value)}` : "Ingresa un monto"}
       </motion.button>
+
+      <AnimatePresence>
+        {voiceOpen && !saved && <VoiceCapture onResult={applyVoice} onCancel={() => setVoiceOpen(false)} />}
+      </AnimatePresence>
 
       {/* Success feedback */}
       <AnimatePresence>

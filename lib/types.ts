@@ -134,6 +134,11 @@ export interface Settings {
   theme: ThemeId;
   plan: PlanState;
   security?: SecuritySettings;
+  /**
+   * The user accepted that, when the browser can't transcribe on the device,
+   * dictation audio is processed by the browser's online speech service.
+   */
+  voiceCloudConsent?: boolean;
 }
 
 export interface FinanceState {

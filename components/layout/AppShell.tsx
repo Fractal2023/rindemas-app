@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { ProSheet } from "@/components/plan/ProSheet";
 import { ThemeController } from "@/components/plan/ThemeController";
 import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
+import { VoiceFab } from "@/components/voice/VoiceFab";
 import { QuickAddSheet, type QuickAddType } from "@/components/quick-add/QuickAddSheet";
 import { LockScreen } from "@/components/security/LockScreen";
 import { isSessionUnlocked } from "@/lib/security";
@@ -13,8 +14,11 @@ import { BottomNav } from "./BottomNav";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface AppActions {
-  /** Opens the quick-add sheet; `productId` pre-fills a despensa purchase of that product. */
-  openQuickAdd: (type?: QuickAddType, productId?: string) => void;
+  /**
+   * Opens the quick-add sheet; `productId` pre-fills a despensa purchase of that
+   * product and `voice` opens it straight into dictation.
+   */
+  openQuickAdd: (type?: QuickAddType, productId?: string, voice?: boolean) => void;
   /** Opens the RindeMás PRO sheet; `theme` is the locked theme that triggered it, if any. */
   openProSheet: (theme?: ThemeId) => void;
 }
@@ -44,14 +48,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(isSessionUnlocked);
   // setPin() also marks the session unlocked, so creating a PIN doesn't lock you out immediately.
   const locked = !!state?.settings.security && !unlocked && !isSessionUnlocked();
-  const quickAdd = useSheet<{ type: QuickAddType; productId?: string }>({ type: "despensa" });
+  const quickAdd = useSheet<{ type: QuickAddType; productId?: string; voice?: boolean }>({ type: "despensa" });
   const pro = useSheet<ThemeId | undefined>(undefined);
   const showQuickAdd = quickAdd.show;
   const showPro = pro.show;
 
   const actions = useMemo<AppActions>(
     () => ({
-      openQuickAdd: (type = "despensa", productId) => showQuickAdd({ type, productId }),
+      openQuickAdd: (type = "despensa", productId, voice) => showQuickAdd({ type, productId, voice }),
       openProSheet: (theme) => showPro(theme),
     }),
     [showQuickAdd, showPro],
@@ -71,6 +75,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[var(--app-bg)] sm:shadow-[0_0_60px_-20px_rgba(0,0,0,0.15)]">
         <ConnectionStatus />
         <main className="flex-1 pb-32">{state ? children : <LoadingSkeleton />}</main>
+        {state && <VoiceFab onClick={() => showQuickAdd({ type: "despensa", voice: true })} />}
         <BottomNav onAdd={() => showQuickAdd({ type: "despensa" })} />
       </div>
       {state && (
@@ -81,6 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             open={quickAdd.open}
             initialType={quickAdd.payload.type}
             initialProductId={quickAdd.payload.productId}
+            startWithVoice={quickAdd.payload.voice}
             onClose={quickAdd.close}
           />
           <ProSheet session={pro.session} open={pro.open} pendingTheme={pro.payload} onClose={pro.close} />

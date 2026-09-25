@@ -46,3 +46,9 @@ La prueba gratis se activa localmente (se guarda en `rindemas_data.settings.plan
 - iOS: se instala desde Safari → Compartir → "Agregar a inicio" (Apple no muestra aviso de instalación). Android/Chrome muestra el aviso automáticamente.
 - En producción el sitio debe servirse por HTTPS para que el service worker funcione.
 - Indicador de conexión en la app: `components/pwa/ConnectionStatus.tsx`.
+
+## Registro por voz
+
+- `lib/voice/parsePurchase.ts` — convierte la frase dictada en producto, cantidad, unidad y precio (regex + números en palabras, "medio kilo", "con 50 centavos", precio por unidad con "a/de/cada/el kilo"). Hace match contra el catálogo del usuario. Sin dependencias.
+- `lib/voice/speech.ts` — envoltorio de la Web Speech API (`es-MX`). Usa reconocimiento **en el dispositivo** (`processLocally`, Chrome reciente) cuando está disponible: ese modo funciona sin internet y el audio no sale del celular. Si no, usa el dictado en línea del navegador (Google/Apple), que necesita internet; la app pide consentimiento una vez (`settings.voiceCloudConsent`, se puede revocar en Ajustes → Privacidad).
+- UI: micrófono en el registro rápido (`components/voice/VoiceCapture.tsx`) y botón flotante en `/app` (`VoiceFab.tsx`, oculto si el navegador no soporta dictado).

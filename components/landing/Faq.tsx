@@ -15,6 +15,10 @@ const FAQ = [
     a: "El PIN evita que otras personas abran tus cuentas en tu celular. No se puede recuperar: para volver a entrar hay que borrar los datos de ese dispositivo. Por eso conviene descargar respaldos.",
   },
   {
+    q: "¿Puedo anotar mis compras con la voz?",
+    a: "Sí. Toca el micrófono y di, por ejemplo, “dos jabones de 30 pesos”: RindeMás llena el producto, la cantidad y el precio para que solo confirmes. Si tu navegador puede reconocer voz dentro del celular (Chrome reciente, después de descargar el español una vez), funciona sin internet y el audio no sale de tu teléfono. Si no, usa el dictado en línea del navegador, que necesita internet; la app te lo avisa antes.",
+  },
+  {
     q: "¿Cómo sabe RindeMás si un producto subió?",
     a: "Compara el precio que anotas con el que registraste la vez anterior para ese mismo producto. Entre más compras anotes, más completo es tu historial de precios.",
   },

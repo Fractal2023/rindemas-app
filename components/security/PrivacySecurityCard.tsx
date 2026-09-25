@@ -1,9 +1,9 @@
 "use client";
 
-import { Fingerprint, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
+import { Fingerprint, Mic, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@/components/ui/Switch";
-import { useFinanceState } from "@/lib/store";
+import { updateSettings, useFinanceState } from "@/lib/store";
 import { DataControlsSheet } from "./DataControlsSheet";
 import { PinSheet, type PinSheetMode } from "./PinSheet";
 
@@ -36,6 +36,25 @@ export function PrivacySecurityCard({ onWiped }: { onWiped: () => void }) {
           <b className="text-slate-800">únicamente en este dispositivo</b>: no se envían a ningún servidor, no se comparten con
           terceros y nadie de RindeMás puede verlos. Si borras los datos del navegador se pierden, así que descarga un respaldo de
           vez en cuando.
+        </p>
+      </div>
+      <div className="flex gap-3 rounded-xl bg-slate-50 p-3">
+        <Mic className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+        <p className="text-xs leading-relaxed text-slate-600">
+          <b className="text-slate-800">Dictado por voz:</b> si tu navegador puede reconocer voz dentro del celular, el audio no sale
+          de él. Si no, el dictado usa el servicio de voz del navegador (Google o Apple) por internet, y siempre te lo avisamos antes.
+          {settings.voiceCloudConsent && (
+            <>
+              {" "}
+              <button
+                type="button"
+                onClick={() => updateSettings({ voiceCloudConsent: false })}
+                className="font-semibold text-emerald-700 underline-offset-2 hover:underline"
+              >
+                Volver a preguntarme
+              </button>
+            </>
+          )}
         </p>
       </div>
 
