@@ -1,10 +1,12 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { ProSheet } from "@/components/plan/ProSheet";
+import { ProSheet, type ProReason } from "@/components/plan/ProSheet";
 import { ThemeController } from "@/components/plan/ThemeController";
 import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
 import { VoiceFab } from "@/components/voice/VoiceFab";
+import { VoiceProGate } from "@/components/voice/VoiceProGate";
+import { planStatus } from "@/lib/plan";
 import { QuickAddSheet, type QuickAddType } from "@/components/quick-add/QuickAddSheet";
 import { LockScreen } from "@/components/security/LockScreen";
 import { isSessionUnlocked } from "@/lib/security";
@@ -20,10 +22,16 @@ interface AppActions {
    */
   openQuickAdd: (type?: QuickAddType, productId?: string, voice?: boolean) => void;
   /** Opens the RindeMás PRO sheet; `theme` is the locked theme that triggered it, if any. */
-  openProSheet: (theme?: ThemeId) => void;
+  openProSheet: (theme?: ThemeId, reason?: ProReason) => void;
+  /** Voice entry for Plan Gratuito users: explains it's a PRO feature. */
+  openVoiceGate: () => void;
 }
 
-const AppActionsContext = createContext<AppActions>({ openQuickAdd: () => {}, openProSheet: () => {} });
+const AppActionsContext = createContext<AppActions>({
+  openQuickAdd: () => {},
+  openProSheet: () => {},
+  openVoiceGate: () => {},
+});
 
 export const useAppActions = () => useContext(AppActionsContext);
 export const useQuickAdd = useAppActions;
@@ -49,16 +57,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   // setPin() also marks the session unlocked, so creating a PIN doesn't lock you out immediately.
   const locked = !!state?.settings.security && !unlocked && !isSessionUnlocked();
   const quickAdd = useSheet<{ type: QuickAddType; productId?: string; voice?: boolean }>({ type: "despensa" });
-  const pro = useSheet<ThemeId | undefined>(undefined);
+  const pro = useSheet<{ theme?: ThemeId; reason?: ProReason }>({});
+  const voiceGate = useSheet<null>(null);
   const showQuickAdd = quickAdd.show;
   const showPro = pro.show;
+  const showVoiceGate = voiceGate.show;
+  const isPro = state ? planStatus(state.settings.plan).isPro : false;
 
   const actions = useMemo<AppActions>(
     () => ({
       openQuickAdd: (type = "despensa", productId, voice) => showQuickAdd({ type, productId, voice }),
-      openProSheet: (theme) => showPro(theme),
+      openProSheet: (theme, reason) => showPro({ theme, reason }),
+      openVoiceGate: () => showVoiceGate(null),
     }),
-    [showQuickAdd, showPro],
+    [showQuickAdd, showPro, showVoiceGate],
   );
 
   if (state && locked) {
@@ -75,7 +87,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[var(--app-bg)] sm:shadow-[0_0_60px_-20px_rgba(0,0,0,0.15)]">
         <ConnectionStatus />
         <main className="flex-1 pb-32">{state ? children : <LoadingSkeleton />}</main>
-        {state && <VoiceFab onClick={() => showQuickAdd({ type: "despensa", voice: true })} />}
+        {state && (
+          <VoiceFab
+            locked={!isPro}
+            onClick={() => (isPro ? showQuickAdd({ type: "despensa", voice: true }) : showVoiceGate(null))}
+          />
+        )}
         <BottomNav onAdd={() => showQuickAdd({ type: "despensa" })} />
       </div>
       {state && (
@@ -89,7 +106,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             startWithVoice={quickAdd.payload.voice}
             onClose={quickAdd.close}
           />
-          <ProSheet session={pro.session} open={pro.open} pendingTheme={pro.payload} onClose={pro.close} />
+          <ProSheet
+            session={pro.session}
+            open={pro.open}
+            pendingTheme={pro.payload.theme}
+            reason={pro.payload.reason}
+            onClose={pro.close}
+          />
+          <VoiceProGate
+            open={voiceGate.open}
+            onClose={voiceGate.close}
+            onSeePlans={() => {
+              voiceGate.close();
+              showPro({ reason: "voice" });
+            }}
+          />
         </>
       )}
     </AppActionsContext.Provider>

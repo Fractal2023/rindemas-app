@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { BellRing, Check, Cloud, Crown, FileDown, Palette, PiggyBank, Sparkles } from "lucide-react";
+import { BellRing, Check, Cloud, Crown, FileDown, Mic, Palette, PiggyBank, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { celebrate } from "@/lib/celebrate";
@@ -12,6 +12,7 @@ import type { ThemeId } from "@/lib/types";
 import { ThemeSwatch } from "./ThemeSwatch";
 
 const BENEFITS = [
+  { icon: Mic, title: "Registro de compras por voz", text: "Dicta “dos jabones de 30 pesos” y el formulario se llena solo" },
   { icon: Palette, title: "4 temas visuales exclusivos", text: "Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta" },
   { icon: BellRing, title: "Alertas de precio personalizadas", text: "Avisos cuando tus productos clave suban" },
   { icon: PiggyBank, title: "Metas de ahorro por quincena", text: "Aparta para la colegiatura, el gas o las vacaciones" },
@@ -19,23 +20,27 @@ const BENEFITS = [
   { icon: Cloud, title: "Respaldo y familia compartida", text: "Tus datos seguros y sincronizados entre celulares" },
 ];
 
+/** Which PRO feature brought the user here (highlighted at the top). */
+export type ProReason = "voice";
+
 interface ProSheetProps {
   open: boolean;
   session: number;
   /** Theme the user tried to pick; applied automatically once PRO is active. */
   pendingTheme?: ThemeId;
+  reason?: ProReason;
   onClose: () => void;
 }
 
-export function ProSheet({ open, session, pendingTheme, onClose }: ProSheetProps) {
+export function ProSheet({ open, session, pendingTheme, reason, onClose }: ProSheetProps) {
   return (
     <Sheet open={open} onClose={onClose} title="RindeMás PRO" subtitle="Haz que tu dinero rinda todavía más">
-      <ProContent key={session} pendingTheme={pendingTheme} onClose={onClose} />
+      <ProContent key={session} pendingTheme={pendingTheme} reason={reason} onClose={onClose} />
     </Sheet>
   );
 }
 
-function ProContent({ pendingTheme, onClose }: { pendingTheme?: ThemeId; onClose: () => void }) {
+function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId; reason?: ProReason; onClose: () => void }) {
   const { settings } = useFinanceState();
   const status = planStatus(settings.plan);
   const [activated, setActivated] = useState(false);
@@ -118,6 +123,17 @@ function ProContent({ pendingTheme, onClose }: { pendingTheme?: ThemeId; onClose
           <p className="mt-1 text-xs text-white/80">Menos que un refresco a la semana.</p>
         </div>
       </div>
+
+      {reason === "voice" && (
+        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white">
+            <Mic className="size-5" />
+          </span>
+          <p className="text-sm text-slate-700">
+            Con PRO anotas tus compras <b className="text-slate-900">hablando</b>: dices el producto y el precio, y solo confirmas.
+          </p>
+        </div>
+      )}
 
       {wanted && (
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">

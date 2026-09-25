@@ -1,12 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, IceCreamCone, Mic, Minus, Plus, Receipt, ShoppingBasket, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
+import { Check, Crown, IceCreamCone, Mic, Minus, Plus, Receipt, ShoppingBasket, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AmountDisplay, NumericKeypad } from "@/components/ui/NumericKeypad";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { VoiceCapture } from "@/components/voice/VoiceCapture";
+import { useAppActions } from "@/components/layout/AppShell";
+import { planStatus } from "@/lib/plan";
 import { celebrate } from "@/lib/celebrate";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { priceVariation } from "@/lib/selectors";
@@ -69,7 +71,9 @@ interface QuickAddFormProps {
 }
 
 function QuickAddForm({ initialType, initialProductId, startWithVoice, active, onDone }: QuickAddFormProps) {
-  const { products, debts } = useFinanceState();
+  const { products, debts, settings } = useFinanceState();
+  const { openVoiceGate } = useAppActions();
+  const isPro = planStatus(settings.plan).isPro;
   const initialProduct = products.find((p) => p.id === initialProductId);
   const payableDebts = useMemo(() => debts.filter((d) => d.direction === "debo" && d.pending > 0), [debts]);
 
@@ -83,7 +87,8 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
   const [description, setDescription] = useState("");
   const [debtId, setDebtId] = useState(payableDebts[0]?.id ?? "");
   const [saved, setSaved] = useState<string | null>(null);
-  const [voiceOpen, setVoiceOpen] = useState(!!startWithVoice);
+  // Voice entry is PRO-only; the gate is also enforced where the overlay mounts.
+  const [voiceOpen, setVoiceOpen] = useState(!!startWithVoice && isPro);
   const [voiceNote, setVoiceNote] = useState<ParsedPurchase | null>(null);
 
   /** Fills the form from a dictated sentence; the user only reviews and saves. */
@@ -172,11 +177,16 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
         <motion.button
           type="button"
           whileTap={{ scale: 0.9 }}
-          onClick={() => setVoiceOpen(true)}
+          onClick={() => (isPro ? setVoiceOpen(true) : openVoiceGate())}
           className="absolute top-1/2 right-0 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-700"
-          aria-label="Registrar por voz"
+          aria-label={isPro ? "Registrar por voz" : "Registrar por voz (RindeMás PRO)"}
         >
           <Mic className="size-5" />
+          {!isPro && (
+            <span className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-white text-emerald-600 shadow ring-1 ring-emerald-100">
+              <Crown className="size-3" />
+            </span>
+          )}
         </motion.button>
       </div>
 
@@ -384,7 +394,7 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
       </motion.button>
 
       <AnimatePresence>
-        {voiceOpen && !saved && <VoiceCapture onResult={applyVoice} onCancel={() => setVoiceOpen(false)} />}
+        {voiceOpen && isPro && !saved && <VoiceCapture onResult={applyVoice} onCancel={() => setVoiceOpen(false)} />}
       </AnimatePresence>
 
       {/* Success feedback */}

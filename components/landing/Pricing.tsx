@@ -15,6 +15,7 @@ const FREE = [
 
 const PRO: { text: string; soon?: boolean }[] = [
   { text: "Todo lo del plan Gratuito" },
+  { text: "Registro de compras por voz" },
   { text: "4 temas exclusivos: Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta" },
   { text: "Alertas de precio personalizadas", soon: true },
   { text: "Metas de ahorro por quincena", soon: true },
