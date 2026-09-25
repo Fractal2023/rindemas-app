@@ -1,7 +1,22 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Crown, IceCreamCone, Mic, Minus, Plus, Receipt, ShoppingBasket, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
+import {
+  ArrowDownLeft,
+  Check,
+  Crown,
+  IceCreamCone,
+  Mic,
+  Minus,
+  Plus,
+  Receipt,
+  ShoppingBasket,
+  TrendingDown,
+  TrendingUp,
+  TriangleAlert,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { AmountDisplay, NumericKeypad } from "@/components/ui/NumericKeypad";
 import { Chip } from "@/components/ui/Chip";
@@ -15,20 +30,46 @@ import { priceVariation } from "@/lib/selectors";
 import { addExpense, payDebt, useFinanceState } from "@/lib/store";
 import { GUSTO_CATEGORIES, PRODUCT_CATEGORIES, UNITS, type ProductCategory, type Unit } from "@/lib/types";
 import { cn, formatMXN, formatPct, normalize } from "@/lib/utils";
+import {
+  addExtraExpense,
+  addExtraIncome,
+  EXTRA_EXPENSE_CATEGORIES,
+  EXTRA_INCOME_SOURCES,
+  type ExtraExpenseCategory,
+  type ExtraIncomeSource,
+} from "@/lib/extras";
+import type { SpokenIntent } from "@/lib/voice/parseIntent";
 import type { ParsedPurchase } from "@/lib/voice/parsePurchase";
 
-export type QuickAddType = "despensa" | "gusto" | "abono";
+/** ingreso = extra income (money in); extra = extra / unexpected expense. */
+export type QuickAddType = "despensa" | "gusto" | "abono" | "ingreso" | "extra";
 
 const TYPES: { value: QuickAddType; label: string; icon: LucideIcon; active: string }[] = [
   { value: "despensa", label: "Despensa", icon: ShoppingBasket, active: "bg-emerald-600 text-white shadow-emerald-600/30" },
-  { value: "gusto", label: "Gusto / Antojo", icon: IceCreamCone, active: "bg-amber-400 text-amber-950 shadow-amber-400/30" },
-  { value: "abono", label: "Abono deuda", icon: Receipt, active: "bg-sky-500 text-white shadow-sky-500/30" },
+  { value: "gusto", label: "Gusto", icon: IceCreamCone, active: "bg-amber-400 text-amber-950 shadow-amber-400/30" },
+  { value: "abono", label: "Abono", icon: Receipt, active: "bg-sky-500 text-white shadow-sky-500/30" },
+  { value: "ingreso", label: "Ingreso", icon: ArrowDownLeft, active: "bg-teal-700 text-white shadow-teal-700/30" },
+  { value: "extra", label: "Extra", icon: TriangleAlert, active: "bg-rose-600 text-white shadow-rose-600/30" },
 ];
 
 const UNIT_LABEL: Record<Unit, string> = { kg: "Kg", pieza: "Pieza", litro: "Litro", paquete: "Paquete" };
 
 /** One-line confirmation shown after dictation. */
-function voiceSummary(p: ParsedPurchase) {
+function voiceSummary(intent: SpokenIntent) {
+  if (intent.kind === "ingreso") {
+    return intent.amount
+      ? `Ingreso extra (${intent.source}) de ${formatMXN(intent.amount)}. Revisa y toca Registrar.`
+      : "Lo anoté como ingreso extra. No escuché el monto: escríbelo con el teclado.";
+  }
+  if (intent.kind === "extra") {
+    return intent.amount
+      ? `Gasto extra (${intent.category}) de ${formatMXN(intent.amount)}. Revisa y toca Registrar.`
+      : "Lo anoté como gasto extra. No escuché el monto: escríbelo con el teclado.";
+  }
+  return purchaseSummary(intent.purchase);
+}
+
+function purchaseSummary(p: ParsedPurchase) {
   if (!p.total) return "No escuché el precio: escríbelo con el teclado.";
   if (p.unitPrice && p.quantity !== 1) {
     return `${p.quantity} × ${formatMXN(p.unitPrice)} = ${formatMXN(p.total)}. Revisa y toca Registrar.`;
@@ -89,12 +130,29 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
   const [saved, setSaved] = useState<string | null>(null);
   // Voice entry is PRO-only; the gate is also enforced where the overlay mounts.
   const [voiceOpen, setVoiceOpen] = useState(!!startWithVoice && isPro);
-  const [voiceNote, setVoiceNote] = useState<ParsedPurchase | null>(null);
+  const [voiceNote, setVoiceNote] = useState<SpokenIntent | null>(null);
+  const [incomeSource, setIncomeSource] = useState<ExtraIncomeSource>(EXTRA_INCOME_SOURCES[0]);
+  const [extraCategory, setExtraCategory] = useState<ExtraExpenseCategory>(EXTRA_EXPENSE_CATEGORIES[0]);
 
   /** Fills the form from a dictated sentence; the user only reviews and saves. */
-  const applyVoice = (p: ParsedPurchase) => {
+  const applyVoice = (intent: SpokenIntent) => {
     setVoiceOpen(false);
-    setVoiceNote(p);
+    setVoiceNote(intent);
+    if (intent.kind === "ingreso") {
+      setType("ingreso");
+      setIncomeSource(intent.source);
+      setDescription(intent.description);
+      if (intent.amount) setAmount(String(intent.amount));
+      return;
+    }
+    if (intent.kind === "extra") {
+      setType("extra");
+      setExtraCategory(intent.category);
+      setDescription(intent.description);
+      if (intent.amount) setAmount(String(intent.amount));
+      return;
+    }
+    const p = intent.purchase;
     setType("despensa");
     if (p.productName) setProductName(p.productName);
     if (p.unit) setUnit(p.unit);
@@ -140,6 +198,12 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
     } else if (type === "gusto") {
       addExpense({ kind: "gusto", amount: value, description: description || gustoCat, category: gustoCat });
       setSaved("Gusto registrado");
+    } else if (type === "ingreso") {
+      addExtraIncome({ amount: value, source: incomeSource, description });
+      setSaved(`+${formatMXN(value)} a tu disponible`);
+    } else if (type === "extra") {
+      addExtraExpense({ amount: value, category: extraCategory, description });
+      setSaved("Gasto extra registrado");
     } else if (selectedDebt) {
       const res = payDebt(selectedDebt.id, value);
       celebrate(res.settled);
@@ -151,7 +215,7 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
   return (
     <div className="relative">
       {/* Type selector */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-5 gap-1.5">
         {TYPES.map((t) => {
           const isActive = t.value === type;
           return (
@@ -161,7 +225,7 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
               whileTap={{ scale: 0.95 }}
               onClick={() => setType(t.value)}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-bold transition-all",
+                "flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-[11px] font-bold transition-all",
                 isActive ? cn("shadow-lg", t.active) : "bg-slate-100 text-slate-500 hover:bg-slate-200",
               )}
             >
@@ -333,6 +397,35 @@ function QuickAddForm({ initialType, initialProductId, startWithVoice, active, o
                 placeholder="¿Qué fue? (opcional) · ej. Tacos"
                 className="w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-900 outline-none ring-amber-400 placeholder:text-slate-400 focus:ring-2"
               />
+            </>
+          )}
+
+          {(type === "ingreso" || type === "extra") && (
+            <>
+              <div className="no-scrollbar -mx-6 flex gap-2 overflow-x-auto px-6">
+                {(type === "ingreso" ? EXTRA_INCOME_SOURCES : EXTRA_EXPENSE_CATEGORIES).map((c) => (
+                  <Chip
+                    key={c}
+                    active={(type === "ingreso" ? incomeSource : extraCategory) === c}
+                    onClick={() =>
+                      type === "ingreso" ? setIncomeSource(c as ExtraIncomeSource) : setExtraCategory(c as ExtraExpenseCategory)
+                    }
+                  >
+                    {c}
+                  </Chip>
+                ))}
+              </div>
+              <input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={type === "ingreso" ? "¿De qué? (opcional) · ej. Venta de tamales" : "¿Qué fue? (opcional) · ej. Consulta médica"}
+                className="w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-900 outline-none ring-emerald-400 placeholder:text-slate-400 focus:ring-2"
+              />
+              <p className="text-xs text-slate-500">
+                {type === "ingreso"
+                  ? "Se suma a tu disponible de esta semana."
+                  : "Se resta de tu disponible, sin mezclarse con tu despensa."}
+              </p>
             </>
           )}
 

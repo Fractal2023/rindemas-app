@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarClock, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { CalendarClock, ChevronDown, ChevronRight, Landmark, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -62,6 +62,14 @@ export function DebtsView() {
         >
           <CalendarClock className="size-4 text-emerald-600" />
           <span className="flex-1">Suscripciones y pruebas gratis</span>
+          <ChevronRight className="size-4 text-slate-300" />
+        </Link>
+        <Link
+          href="/app/prestamos"
+          className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-100 transition hover:bg-slate-50"
+        >
+          <Landmark className="size-4 text-sky-600" />
+          <span className="flex-1">Préstamos y compras a plazos</span>
           <ChevronRight className="size-4 text-slate-300" />
         </Link>
         <SegmentedControl

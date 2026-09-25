@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { CloudDownload, Globe, Mic, MicOff, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { updateSettings, useFinanceState } from "@/lib/store";
-import { parsePurchase, type ParsedPurchase } from "@/lib/voice/parsePurchase";
+import { parseIntent, type SpokenIntent } from "@/lib/voice/parseIntent";
 import { installOnDevice, isSpeechSupported, listen, onDeviceStatus, voiceErrorMessage } from "@/lib/voice/speech";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ type Phase = "checking" | "offer-download" | "downloading" | "consent" | "listen
 type Mode = "local" | "cloud";
 
 interface VoiceCaptureProps {
-  onResult: (parsed: ParsedPurchase) => void;
+  onResult: (intent: SpokenIntent) => void;
   onCancel: () => void;
 }
 
@@ -50,8 +50,10 @@ export function VoiceCapture({ onResult, onCancel }: VoiceCaptureProps) {
       onInterim: setInterim,
       onResult: (alternatives) => {
         gotResult.current = true;
-        const parsed = alternatives.map((a) => parsePurchase(a, products));
-        onResult(parsed.find((p) => p.total && p.productName) ?? parsed[0]);
+        // Classify each alternative (purchase, extra income or extra expense) and keep the most complete one.
+        const parsed = alternatives.map((a) => parseIntent(a, products));
+        const complete = (i: SpokenIntent) => (i.kind === "despensa" ? !!(i.purchase.total && i.purchase.productName) : !!i.amount);
+        onResult(parsed.find(complete) ?? parsed[0]);
       },
       onError: (code) => {
         failed = true;

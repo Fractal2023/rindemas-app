@@ -7,6 +7,8 @@ import { createLocalStorageAdapter, STORAGE_KEY } from "./storage";
 import { withReplenishment } from "./replenishment";
 import { hashPin, markSessionUnlocked, newSalt } from "./security";
 import { loadDemoSubscriptions, subscriptionsForExport, wipeSubscriptions } from "./subscriptions";
+import { extraExpenses, extraIncomes, loadDemoExtras } from "./extras";
+import { loadDemoLoans, loans } from "./loans";
 import { DEFAULT_THEME, getTheme, isProTheme } from "./themes";
 import type {
   Debt,
@@ -363,6 +365,8 @@ export function loadDemoData() {
     return { ...demo, settings: { ...demo.settings, theme: s.settings.theme, plan: s.settings.plan, security: s.settings.security } };
   });
   loadDemoSubscriptions();
+  loadDemoExtras();
+  loadDemoLoans();
 }
 
 /* ---------- Privacy & security ---------- */
@@ -398,6 +402,9 @@ export function exportDataJson() {
       ...data,
       settings: publicSettings,
       subscriptions: subscriptionsForExport(),
+      extraIncomes: extraIncomes.all(),
+      extraExpenses: extraExpenses.all(),
+      loans: loans.all(),
     },
     null,
     2,
@@ -412,6 +419,9 @@ export function wipeAllData() {
   storage.clear();
   legacyStorage.clear();
   wipeSubscriptions();
+  extraIncomes.wipe();
+  extraExpenses.wipe();
+  loans.wipe();
   markSessionUnlocked(false);
   setState(() => createEmptyState());
 }

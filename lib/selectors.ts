@@ -61,9 +61,15 @@ export function sumBy(transactions: Transaction[], kinds: TxKind[]) {
 export interface WeeklySummary {
   income: number;
   received: number;
+  /** Extra incomes this week (sales, bonuses, gifts…). */
+  extraIncome: number;
   despensa: number;
   gusto: number;
   abonos: number;
+  /** Extra / unexpected expenses this week. */
+  extras: number;
+  /** Loan installments paid this week. */
+  loanPayments: number;
   spent: number;
   available: number;
   /** 0..n share of the week's money already spent */
@@ -71,22 +77,38 @@ export interface WeeklySummary {
   daysLeft: number;
 }
 
-export function weeklySummary(state: FinanceState, now = new Date()): WeeklySummary {
+/** Money movements kept outside the main finance state (their own LocalStorage keys). */
+export interface WeeklyExtras {
+  extraIncomes: { amount: number; date: string }[];
+  extraExpenses: { amount: number; date: string }[];
+  loanPayments: { amount: number; date: string }[];
+}
+
+export function weeklySummary(state: FinanceState, now = new Date(), extras?: WeeklyExtras): WeeklySummary {
   const week = txInWeek(state.transactions, 0, now);
+  const range = weekRange(0, now);
+  const sumWeek = (items: { amount: number; date: string }[] = []) =>
+    items.filter((i) => isInRange(i.date, range)).reduce((a, i) => a + i.amount, 0);
   const income = state.settings.weeklyIncome;
   const received = sumBy(week, ["cobro"]);
+  const extraIncome = sumWeek(extras?.extraIncomes);
   const despensa = sumBy(week, ["despensa"]);
   const gusto = sumBy(week, ["gusto"]);
   const abonos = sumBy(week, ["abono"]);
-  const spent = despensa + gusto + abonos;
-  const budget = income + received;
+  const extraSpent = sumWeek(extras?.extraExpenses);
+  const loanPayments = sumWeek(extras?.loanPayments);
+  const spent = despensa + gusto + abonos + extraSpent + loanPayments;
+  const budget = income + received + extraIncome;
   const todayIndex = (now.getDay() + 6) % 7;
   return {
     income,
     received,
+    extraIncome,
     despensa,
     gusto,
     abonos,
+    extras: extraSpent,
+    loanPayments,
     spent,
     available: budget - spent,
     usage: budget > 0 ? spent / budget : 0,

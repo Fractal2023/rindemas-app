@@ -13,15 +13,18 @@ interface Props {
 
 export function WeeklyBalanceCard({ summary, onEditIncome }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const { income, received, spent, available, usage, daysLeft, despensa, gusto, abonos } = summary;
-  const budget = income + received;
+  const { income, received, extraIncome, spent, available, usage, daysLeft, despensa, gusto, abonos, extras, loanPayments } =
+    summary;
+  const budget = income + received + extraIncome;
+  const entries = received + extraIncome;
   const over = available < 0;
   const perDay = daysLeft > 0 ? Math.max(available, 0) / daysLeft : 0;
 
   const segments = [
     { label: "Despensa", value: despensa, bar: "bg-white", dot: "bg-white" },
     { label: "Gustos", value: gusto, bar: "bg-amber-300", dot: "bg-amber-300" },
-    { label: "Abonos", value: abonos, bar: "bg-sky-300", dot: "bg-sky-300" },
+    { label: "Abonos", value: abonos + loanPayments, bar: "bg-sky-300", dot: "bg-sky-300" },
+    { label: "Extras", value: extras, bar: "bg-rose-300", dot: "bg-rose-300" },
   ];
 
   const tone = over
@@ -104,7 +107,7 @@ export function WeeklyBalanceCard({ summary, onEditIncome }: Props) {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {segments.map((s) => (
                   <div key={s.label} className="rounded-2xl bg-black/10 px-3 py-2">
                     <p className="flex items-center gap-1.5 text-[11px] text-white/80">
@@ -131,8 +134,8 @@ export function WeeklyBalanceCard({ summary, onEditIncome }: Props) {
             <p className="text-base font-bold tabular-nums">{formatMXN(income)}</p>
           </button>
           <div className="rounded-2xl bg-white/15 px-3.5 py-2.5">
-            <p className="text-[11px] font-medium text-white/80">{received > 0 ? "Cobros recibidos" : "Total gastado"}</p>
-            <p className="text-base font-bold tabular-nums">{formatMXN(received > 0 ? received : spent)}</p>
+            <p className="text-[11px] font-medium text-white/80">{entries > 0 ? "Ingresos extra y cobros" : "Total gastado"}</p>
+            <p className="text-base font-bold tabular-nums">{formatMXN(entries > 0 ? entries : spent)}</p>
           </div>
         </div>
       </div>

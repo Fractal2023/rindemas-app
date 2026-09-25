@@ -6,10 +6,13 @@ import { useState } from "react";
 import { useQuickAdd } from "@/components/layout/AppShell";
 import { PlanBadge } from "@/components/plan/PlanBadge";
 import { BrandLogo } from "@/components/ui/BrandLogo";
+import { extraExpenses, extraIncomes } from "@/lib/extras";
+import { allLoanPayments, loans } from "@/lib/loans";
 import { debtTotals, weeklySummary } from "@/lib/selectors";
 import { useFinanceState } from "@/lib/store";
 import { formatMXN, longToday } from "@/lib/utils";
 import { InflationAlerts } from "./InflationAlerts";
+import { ExtrasTiles } from "./ExtrasTiles";
 import { RunningLowCard } from "./RunningLowCard";
 import { SubscriptionsTile } from "@/components/subscriptions/SubscriptionsTile";
 import { SettingsSheet } from "./SettingsSheet";
@@ -30,7 +33,14 @@ export function Dashboard() {
     setSettingsSession((n) => n + 1);
     setSettingsOpen(true);
   };
-  const summary = weeklySummary(state);
+  const incomes = extraIncomes.useItems();
+  const expenses = extraExpenses.useItems();
+  const loanList = loans.useItems();
+  const summary = weeklySummary(state, new Date(), {
+    extraIncomes: incomes,
+    extraExpenses: expenses,
+    loanPayments: allLoanPayments(loanList),
+  });
   const { owe, owed } = debtTotals(state);
   const recent = state.transactions.slice(0, 8);
 
@@ -88,6 +98,8 @@ export function Dashboard() {
           <p className="mt-1.5 text-lg font-extrabold text-slate-900 tabular-nums">{formatMXN(owed)}</p>
         </div>
       </Link>
+
+      <ExtrasTiles incomes={incomes} expenses={expenses} loans={loanList} />
 
       <SubscriptionsTile />
 
