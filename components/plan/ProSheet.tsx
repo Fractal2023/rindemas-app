@@ -5,7 +5,10 @@ import { Brain, CalendarClock, Check, Crown, Landmark, Mic, ShieldCheck, Sparkle
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { celebrate } from "@/lib/celebrate";
-import { planStatus, PRO_PRICE_MXN, TRIAL_DAYS } from "@/lib/plan";
+import { billingBadge, billingOption, DEFAULT_BILLING, monthlyEquivalent, planStatus, TRIAL_DAYS } from "@/lib/plan";
+import type { BillingPeriod } from "@/lib/types";
+import { formatMXN } from "@/lib/utils";
+import { BillingToggle } from "./BillingToggle";
 import { downgradeToFree, startProTrial, useFinanceState } from "@/lib/store";
 import { getTheme, THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/lib/types";
@@ -69,11 +72,14 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
   const { settings } = useFinanceState();
   const status = planStatus(settings.plan);
   const [activated, setActivated] = useState(false);
+  const [billing, setBilling] = useState<BillingPeriod>(DEFAULT_BILLING);
+  const option = billingOption(billing);
+  const badge = billingBadge(option);
   const [confirmDowngrade, setConfirmDowngrade] = useState(false);
   const wanted = pendingTheme ? getTheme(pendingTheme) : null;
 
   const start = () => {
-    if (!startProTrial(pendingTheme)) return;
+    if (!startProTrial(pendingTheme, billing)) return;
     setActivated(true);
     celebrate(true);
     setTimeout(onClose, 1800);
@@ -87,7 +93,7 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
           <p className="mt-2 text-lg font-extrabold">Tienes RindeMás PRO</p>
           <p className="text-sm text-white/80">
             {status.onTrial
-              ? `Prueba gratis: te quedan ${status.trialDaysLeft} ${status.trialDaysLeft === 1 ? "día" : "días"}.`
+              ? `Prueba gratis${settings.plan.billing ? ` del Plan ${billingOption(settings.plan.billing).label}` : ""}: te quedan ${status.trialDaysLeft} ${status.trialDaysLeft === 1 ? "día" : "días"}.`
               : "Tu suscripción está activa."}
           </p>
         </div>
@@ -141,11 +147,23 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
           <p className="mt-3 flex items-center gap-2 text-2xl font-extrabold tracking-tight">
             <Crown className="size-6" /> RindeMás PRO
           </p>
-          <p className="mt-1 flex items-baseline gap-1">
-            <span className="text-4xl font-extrabold tabular-nums">${PRO_PRICE_MXN}</span>
-            <span className="text-sm font-semibold text-white/80">MXN / mes</span>
-          </p>
-          <p className="mt-1 text-xs text-white/80">Menos que un refresco a la semana.</p>
+          <div className="mt-3">
+            <BillingToggle id="pro-sheet" value={billing} onChange={setBilling} tone="onDark" />
+          </div>
+          <motion.div key={billing} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
+            <p className="flex flex-wrap items-baseline gap-x-1.5">
+              <span className="text-4xl font-extrabold tabular-nums">${option.price}</span>
+              <span className="text-sm font-semibold text-white/80">MXN {option.per}</span>
+              {badge && (
+                <span className="ml-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-emerald-700">{badge}</span>
+              )}
+            </p>
+            <p className="mt-1 text-xs text-white/80">
+              {option.months === 1
+                ? "Menos que un refresco a la semana."
+                : `Equivale a ${formatMXN(monthlyEquivalent(option))} al mes, en un solo pago ${option.every}.`}
+            </p>
+          </motion.div>
         </div>
       </div>
 
@@ -260,19 +278,19 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
             onClick={start}
             className="w-full rounded-2xl bg-emerald-600 py-4 text-base font-bold text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-700"
           >
-            Comenzar {TRIAL_DAYS} días gratis
+            Probar {TRIAL_DAYS} días gratis · Plan {option.label}
           </motion.button>
           <p className="text-center text-[11px] text-slate-400">
-            Después ${PRO_PRICE_MXN} MXN al mes. Cancela cuando quieras desde Ajustes.
+            Después ${option.price} MXN {option.every}. Cancela cuando quieras desde Ajustes.
           </p>
         </>
       ) : (
         <>
           <button disabled className="w-full rounded-2xl bg-slate-100 py-4 text-base font-bold text-slate-400">
-            Suscripción disponible muy pronto
+            Activar Plan {option.label}
           </button>
           <p className="text-center text-[11px] text-slate-400">
-            Tu prueba gratis de {TRIAL_DAYS} días ya terminó. Te avisaremos cuando puedas suscribirte.
+            Tu prueba gratis de {TRIAL_DAYS} días ya terminó. Los pagos estarán disponibles muy pronto; te avisaremos.
           </p>
         </>
       )}

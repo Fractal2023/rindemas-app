@@ -22,7 +22,7 @@ npm run dev
 - `lib/selectors.ts` — cálculos: balance semanal, variación de precios, reportes
 - `lib/replenishment.ts` — (PRO) predicción de reabastecimiento: intervalo promedio entre compras por producto y estado `ok` / `warning` (<3 días) / `critical` (fecha cumplida). Se guarda en `product.replenish` y se recalcula al registrar o borrar una compra. La lista "compra de hoy" vive en `shoppingList`
 - `lib/themes.ts` — 5 temas (Esmeralda gratis; Oscuro Neón, Terracota Cálido, Azul Ejecutivo y Morado Menta PRO). Cada tema redefine las variables de color de Tailwind (`--color-emerald-*`, `--color-slate-*`, …), así los componentes no cambian
-- `lib/plan.ts` — estado del plan (Gratuito / PRO con prueba de 7 días, $59 MXN/mes) y tema efectivo
+- `lib/plan.ts` — estado del plan (Gratuito / PRO con prueba de 7 días) y tema efectivo. Precios PRO en `BILLING_OPTIONS`: mensual $59, trimestral $149, semestral $269, anual $499. Las etiquetas de ahorro se calculan contra $59/mes y se redondean hacia abajo (15%, 24%, "2 meses GRATIS"). Selector compartido: `components/plan/BillingToggle.tsx`
 - `lib/seed.ts` — `createEmptyState()` (lo que ve un usuario nuevo: la app vacía) y `createDemoState()` (familia de ejemplo, opcional; fechas relativas a hoy)
 
 La app arranca vacía. Para ver datos de ejemplo: Inicio → ⚙️ Ajustes → "Cargar datos de ejemplo" (reemplaza lo registrado; conserva plan, tema y PIN).

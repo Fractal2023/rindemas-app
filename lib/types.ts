@@ -112,6 +112,8 @@ export type ThemeId = "esmeralda" | "neon" | "terracota" | "azul" | "morado-ment
 
 export type PlanTier = "free" | "pro";
 
+export type BillingPeriod = "mensual" | "trimestral" | "semestral" | "anual";
+
 export interface PlanState {
   tier: PlanTier;
   /** ISO date when PRO was activated. */
@@ -120,6 +122,8 @@ export interface PlanState {
   trialEndsAt?: string;
   /** Set once the 7-day trial has been used, so it can't be restarted. */
   trialUsed?: boolean;
+  /** Billing period chosen when PRO was activated. */
+  billing?: BillingPeriod;
 }
 
 /** App lock. Only a salted SHA-256 hash of the PIN is stored, never the PIN itself. */

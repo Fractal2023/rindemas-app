@@ -20,7 +20,7 @@ const FAQ = [
   },
   {
     q: "¿Qué incluye RindeMás PRO?",
-    a: `Registro de compras por voz, el gestor de suscripciones con alertas antes de que se cobre una prueba gratis, la predicción de lo que se te va a acabar con sugerencias de compra, préstamos a plazos ilimitados con recordatorios de pago (en Gratuito es 1 préstamo activo) y 4 temas visuales. Cuesta $${PRO_PRICE_MXN} MXN al mes, con ${TRIAL_DAYS} días de prueba gratis.`,
+    a: `Registro de compras por voz, el gestor de suscripciones con alertas antes de que se cobre una prueba gratis, la predicción de lo que se te va a acabar con sugerencias de compra, préstamos a plazos ilimitados con recordatorios de pago (en Gratuito es 1 préstamo activo) y 4 temas visuales. Cuesta $${PRO_PRICE_MXN} MXN al mes, $149 cada 3 meses, $269 cada 6 meses o $499 al año, con ${TRIAL_DAYS} días de prueba gratis.`,
   },
   {
     q: "¿Cómo sabe RindeMás si un producto subió?",
@@ -28,7 +28,7 @@ const FAQ = [
   },
   {
     q: "¿Cómo funciona la prueba de PRO?",
-    a: `Desde Ajustes activas ${TRIAL_DAYS} días de PRO gratis. Al terminar, la app regresa al plan Gratuito y conservas todos tus datos. PRO cuesta $${PRO_PRICE_MXN} MXN al mes.`,
+    a: `Desde Ajustes activas ${TRIAL_DAYS} días de PRO gratis. Al terminar, la app regresa al plan Gratuito y conservas todos tus datos. Puedes elegir pago mensual ($${PRO_PRICE_MXN} MXN), trimestral, semestral o anual.`,
   },
 ];
 

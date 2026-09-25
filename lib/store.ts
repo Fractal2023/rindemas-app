@@ -17,6 +17,7 @@ import type {
   FinanceState,
   Product,
   ProductCategory,
+  BillingPeriod,
   Settings,
   ThemeId,
   Transaction,
@@ -436,14 +437,14 @@ export function setTheme(theme: ThemeId): boolean {
 }
 
 /** Starts the 7-day PRO trial (once per device). Optionally applies the theme that prompted it. */
-export function startProTrial(theme?: ThemeId): boolean {
+export function startProTrial(theme?: ThemeId, billing?: BillingPeriod): boolean {
   const { plan } = ensureState().settings;
   if (planStatus(plan).isPro) return true;
   if (plan.trialUsed) return false;
   const now = new Date();
   const trialEndsAt = new Date(now.getTime() + TRIAL_DAYS * 86_400_000).toISOString();
   updateSettings({
-    plan: { tier: "pro", startedAt: now.toISOString(), trialEndsAt, trialUsed: true },
+    plan: { tier: "pro", startedAt: now.toISOString(), trialEndsAt, trialUsed: true, ...(billing ? { billing } : {}) },
     ...(theme ? { theme } : {}),
   });
   return true;

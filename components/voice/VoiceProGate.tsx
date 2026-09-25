@@ -56,7 +56,7 @@ export function VoiceProGate({ open, onClose, onSeePlans }: VoiceProGateProps) {
             Ver RindeMás PRO
           </button>
           <p className="mt-2 text-xs text-slate-500">
-            {canStartTrial ? `${TRIAL_DAYS} días gratis, después $${PRO_PRICE_MXN} MXN al mes` : `$${PRO_PRICE_MXN} MXN al mes`}
+            {canStartTrial ? `${TRIAL_DAYS} días gratis · desde $${PRO_PRICE_MXN} MXN al mes o $499 al año` : `Desde $${PRO_PRICE_MXN} MXN al mes o $499 al año`}
           </p>
         </div>
         <button type="button" onClick={onClose} className="text-sm font-semibold text-slate-500">
