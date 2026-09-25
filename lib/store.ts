@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { canUseTheme, FREE_PLAN, planStatus, TRIAL_DAYS } from "./plan";
 import { createSeedState } from "./seed";
 import { createLocalStorageAdapter, STORAGE_KEY } from "./storage";
+import { withReplenishment } from "./replenishment";
 import { hashPin, markSessionUnlocked, newSalt } from "./security";
 import { DEFAULT_THEME, getTheme, isProTheme } from "./themes";
 import type {
@@ -35,10 +36,12 @@ function isFinanceState(v: unknown): v is FinanceState {
   );
 }
 
-/** Fills in fields added after data was first saved (theme, plan). */
+/** Fills in fields added after data was first saved (theme, plan, shopping list, purchase rhythm). */
 function withDefaults(s: FinanceState): FinanceState {
   return {
     ...s,
+    products: withReplenishment(s.products, s.transactions),
+    shoppingList: Array.isArray(s.shoppingList) ? s.shoppingList : [],
     settings: {
       ...s.settings,
       theme: getTheme(s.settings.theme).id,
@@ -187,7 +190,14 @@ export function addExpense(input: {
       date,
       productId,
     };
-    return { ...s, products, transactions: sortTx([tx, ...s.transactions]) };
+    const transactions = sortTx([tx, ...s.transactions]);
+    return {
+      ...s,
+      // Buying a product updates its purchase rhythm and checks it off today's list.
+      products: withReplenishment(products, transactions),
+      transactions,
+      shoppingList: productId ? s.shoppingList.filter((i) => i.productId !== productId) : s.shoppingList,
+    };
   });
 }
 
@@ -287,8 +297,25 @@ export function deleteTransaction(txId: string) {
               : d,
           )
         : s.debts;
-    return { ...s, debts, transactions: s.transactions.filter((t) => t.id !== txId) };
+    const transactions = s.transactions.filter((t) => t.id !== txId);
+    const products = tx.productId ? withReplenishment(s.products, transactions) : s.products;
+    return { ...s, debts, products, transactions };
   });
+}
+
+/* ---------- Shopping list ("la compra de hoy") ---------- */
+
+export function addToShoppingList(productIds: string[]) {
+  setState((s) => {
+    const existing = new Set(s.shoppingList.map((i) => i.productId));
+    const addedAt = new Date().toISOString();
+    const added = productIds.filter((id) => !existing.has(id)).map((productId) => ({ productId, addedAt }));
+    return added.length ? { ...s, shoppingList: [...s.shoppingList, ...added] } : s;
+  });
+}
+
+export function removeFromShoppingList(productId: string) {
+  setState((s) => ({ ...s, shoppingList: s.shoppingList.filter((i) => i.productId !== productId) }));
 }
 
 export function updateSettings(patch: Partial<Settings>) {
@@ -346,6 +373,7 @@ export function wipeAllData() {
     products: [],
     transactions: [],
     debts: [],
+    shoppingList: [],
   }));
 }
 

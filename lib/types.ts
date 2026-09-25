@@ -12,6 +12,7 @@ export const PRODUCT_CATEGORIES = [
   "Carnes",
   "Bebidas",
   "Limpieza",
+  "Higiene personal",
 ] as const;
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 
@@ -30,6 +31,18 @@ export interface PricePoint {
   date: string;
 }
 
+/**
+ * Purchase rhythm of a product, derived from its "despensa" transactions and
+ * saved with the product (recomputed whenever purchases change).
+ */
+export interface ReplenishInfo {
+  /** Distinct purchase days recorded. */
+  purchases: number;
+  lastPurchasedAt?: string;
+  /** Average days between purchases. Needs at least 2 purchases. */
+  avgIntervalDays?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -37,6 +50,13 @@ export interface Product {
   category: ProductCategory;
   /** Sorted ascending by date. Last item is the current price. */
   history: PricePoint[];
+  replenish?: ReplenishInfo;
+}
+
+/** Item on "la compra de hoy" (today's shopping list). */
+export interface ShoppingItem {
+  productId: string;
+  addedAt: string;
 }
 
 /**
@@ -122,4 +142,5 @@ export interface FinanceState {
   products: Product[];
   transactions: Transaction[];
   debts: Debt[];
+  shoppingList: ShoppingItem[];
 }

@@ -27,27 +27,37 @@ interface QuickAddSheetProps {
   open: boolean;
   onClose: () => void;
   initialType: QuickAddType;
+  /** Pre-fills the product (name, unit, category) for a despensa purchase. */
+  initialProductId?: string;
   session: number;
 }
 
-export function QuickAddSheet({ open, onClose, initialType, session }: QuickAddSheetProps) {
+export function QuickAddSheet({ open, onClose, initialType, initialProductId, session }: QuickAddSheetProps) {
   return (
     <Sheet open={open} onClose={onClose} title="Registro rápido" subtitle="Anota tu compra en segundos">
-      <QuickAddForm key={session} initialType={initialType} active={open} onDone={onClose} />
+      <QuickAddForm key={session} initialType={initialType} initialProductId={initialProductId} active={open} onDone={onClose} />
     </Sheet>
   );
 }
 
-function QuickAddForm({ initialType, active, onDone }: { initialType: QuickAddType; active: boolean; onDone: () => void }) {
+interface QuickAddFormProps {
+  initialType: QuickAddType;
+  initialProductId?: string;
+  active: boolean;
+  onDone: () => void;
+}
+
+function QuickAddForm({ initialType, initialProductId, active, onDone }: QuickAddFormProps) {
   const { products, debts } = useFinanceState();
+  const initialProduct = products.find((p) => p.id === initialProductId);
   const payableDebts = useMemo(() => debts.filter((d) => d.direction === "debo" && d.pending > 0), [debts]);
 
   const [type, setType] = useState<QuickAddType>(initialType);
   const [amount, setAmount] = useState("");
-  const [productName, setProductName] = useState("");
-  const [unit, setUnit] = useState<Unit>("kg");
+  const [productName, setProductName] = useState(initialProduct?.name ?? "");
+  const [unit, setUnit] = useState<Unit>(initialProduct?.unit ?? "kg");
   const [qty, setQty] = useState(1);
-  const [category, setCategory] = useState<ProductCategory>("Abarrotes");
+  const [category, setCategory] = useState<ProductCategory>(initialProduct?.category ?? "Abarrotes");
   const [gustoCat, setGustoCat] = useState<string>(GUSTO_CATEGORIES[0]);
   const [description, setDescription] = useState("");
   const [debtId, setDebtId] = useState(payableDebts[0]?.id ?? "");

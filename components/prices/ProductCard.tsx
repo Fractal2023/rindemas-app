@@ -2,9 +2,10 @@
 
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Repeat } from "lucide-react";
 import { useState } from "react";
 import { PriceBadge } from "@/components/ui/PriceBadge";
+import { frequencyLabel, runOutLabel, stockStatus } from "@/lib/replenishment";
 import { priceVariation } from "@/lib/selectors";
 import { recordPrice } from "@/lib/store";
 import { UNIT_SHORT, type Product } from "@/lib/types";
@@ -18,8 +19,17 @@ const TREND_CHIP = {
   flat: "bg-slate-100 text-slate-500",
 };
 
+/** Consumption label color by stock status. */
+const STOCK_STYLE = {
+  ok: "bg-emerald-50 text-emerald-700",
+  warning: "bg-amber-50 text-amber-700",
+  critical: "bg-rose-50 text-rose-600",
+  unknown: "bg-slate-100 text-slate-500",
+};
+
 export function ProductCard({ product, expanded, onToggle }: { product: Product; expanded: boolean; onToggle: () => void }) {
   const v = priceVariation(product);
+  const stock = stockStatus(product.replenish);
   const [newPrice, setNewPrice] = useState("");
   const parsed = Number(newPrice);
 
@@ -54,6 +64,18 @@ export function ProductCard({ product, expanded, onToggle }: { product: Product;
         <ChevronDown className={cn("size-4 shrink-0 text-slate-300 transition-transform", expanded && "rotate-180")} />
       </button>
 
+      {stock.avgIntervalDays && (
+        <p
+          className={cn(
+            "-mt-2 mb-3 ml-[4.5rem] inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap",
+            STOCK_STYLE[stock.status],
+          )}
+        >
+          <Repeat className="size-3 shrink-0" />
+          {frequencyLabel(stock.avgIntervalDays)}
+        </p>
+      )}
+
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -68,6 +90,12 @@ export function ProductCard({ product, expanded, onToggle }: { product: Product;
                   {v.trend === "flat"
                     ? "El precio se mantiene igual que en el registro anterior."
                     : `${v.trend === "up" ? "Subió" : "Bajó"} ${formatMXN(Math.abs(v.delta))} por ${product.unit} respecto al registro anterior (${formatMXN(v.previous)}).`}
+                </p>
+              )}
+              {stock.nextDate && stock.daysLeft !== undefined && (
+                <p className="text-sm text-slate-600">
+                  <b className="text-slate-800">{runOutLabel(stock.daysLeft)}.</b> Próxima compra estimada:{" "}
+                  {shortDate(stock.nextDate.toISOString())} ({product.replenish?.purchases} compras registradas).
                 </p>
               )}
               <Sparkline history={product.history.slice(-8)} color={TREND_COLOR[v.trend]} />

@@ -10,6 +10,7 @@ import { debtTotals, weeklySummary } from "@/lib/selectors";
 import { useFinanceState } from "@/lib/store";
 import { formatMXN, longToday } from "@/lib/utils";
 import { InflationAlerts } from "./InflationAlerts";
+import { RunningLowCard } from "./RunningLowCard";
 import { SettingsSheet } from "./SettingsSheet";
 import { TransactionList } from "./TransactionList";
 import { WeeklyBalanceCard } from "./WeeklyBalanceCard";
@@ -57,6 +58,8 @@ export function Dashboard() {
       </header>
 
       <WeeklyBalanceCard summary={summary} onEditIncome={openSettings} />
+
+      <RunningLowCard products={state.products} shoppingList={state.shoppingList} />
 
       <Link href="/app/deudas" className="grid grid-cols-2 gap-3">
         <div className="rounded-3xl bg-white p-4 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.12)] ring-1 ring-slate-100">

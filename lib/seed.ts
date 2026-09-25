@@ -1,4 +1,5 @@
 import { FREE_PLAN } from "./plan";
+import { withReplenishment } from "./replenishment";
 import { DEFAULT_THEME } from "./themes";
 import type { Debt, FinanceState, Product, ProductCategory, Transaction, TxKind, Unit } from "./types";
 import { round2, startOfWeek } from "./utils";
@@ -221,13 +222,34 @@ export function createSeedState(now = new Date()): FinanceState {
     debtPaymentTx("debt_coppel", "pay_c3"),
   ];
 
+  // --- Household items bought on a steady rhythm (drives "Por terminarse esta semana") ---
+  const daysAgo = (n: number, hour = 11) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - n);
+    d.setHours(hour, 0, 0, 0);
+    return d.toISOString();
+  };
+  // name, unit, category, [days ago, price] per purchase (oldest first)
+  const household: [string, Unit, ProductCategory, [number, number][]][] = [
+    ["Papel de baño 12 rollos", "paquete", "Higiene personal", [[29, 89], [15, 95]]], // every 14 days → ran out yesterday
+    ["Pasta de dientes 100 ml", "pieza", "Higiene personal", [[40, 38], [20, 41]]], // every 20 days → today
+    ["Jabón de tocador 3 pzas", "paquete", "Higiene personal", [[19, 42], [9, 45]]], // every 10 days → tomorrow
+    ["Cloro 1 L", "litro", "Limpieza", [[18, 24], [6, 26]]], // every 12 days → fine
+  ];
+  household.forEach(([name, unit, category, buys], i) => {
+    const id = `prod_h${i + 1}`;
+    products.push({ id, name, unit, category, history: buys.map(([d, price]) => ({ price, date: daysAgo(d, 10) })) });
+    buys.forEach(([d, price]) => transactions.push(tx("despensa", price, name, category, daysAgo(d, 10), { productId: id })));
+  });
+
   transactions.sort((a, b) => b.date.localeCompare(a.date));
 
   return {
     version: 1,
     settings: { familyName: "Familia García", weeklyIncome: 7500, theme: DEFAULT_THEME, plan: FREE_PLAN },
-    products,
+    products: withReplenishment(products, transactions),
     transactions,
     debts,
+    shoppingList: [],
   };
 }
