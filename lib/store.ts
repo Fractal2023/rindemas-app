@@ -6,6 +6,7 @@ import { createSeedState } from "./seed";
 import { createLocalStorageAdapter, STORAGE_KEY } from "./storage";
 import { withReplenishment } from "./replenishment";
 import { hashPin, markSessionUnlocked, newSalt } from "./security";
+import { resetSubscriptionsToDemo, subscriptionsForExport, wipeSubscriptions } from "./subscriptions";
 import { DEFAULT_THEME, getTheme, isProTheme } from "./themes";
 import type {
   Debt,
@@ -328,6 +329,7 @@ export function resetToDemo() {
     const seed = createSeedState();
     return { ...seed, settings: { ...seed.settings, theme: s.settings.theme, plan: s.settings.plan } };
   });
+  resetSubscriptionsToDemo();
 }
 
 /* ---------- Privacy & security ---------- */
@@ -356,7 +358,17 @@ export function exportDataJson() {
   // The PIN hash is useless outside this device; leave it out of backups.
   const { security: _security, ...publicSettings } = settings;
   void _security;
-  return JSON.stringify({ app: "RindeMás", exportedAt: new Date().toISOString(), ...data, settings: publicSettings }, null, 2);
+  return JSON.stringify(
+    {
+      app: "RindeMás",
+      exportedAt: new Date().toISOString(),
+      ...data,
+      settings: publicSettings,
+      subscriptions: subscriptionsForExport(),
+    },
+    null,
+    2,
+  );
 }
 
 /**
@@ -366,6 +378,7 @@ export function exportDataJson() {
 export function wipeAllData() {
   storage.clear();
   legacyStorage.clear();
+  wipeSubscriptions();
   markSessionUnlocked(false);
   setState(() => ({
     version: 1,

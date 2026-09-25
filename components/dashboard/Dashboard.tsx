@@ -11,6 +11,7 @@ import { useFinanceState } from "@/lib/store";
 import { formatMXN, longToday } from "@/lib/utils";
 import { InflationAlerts } from "./InflationAlerts";
 import { RunningLowCard } from "./RunningLowCard";
+import { SubscriptionsTile } from "@/components/subscriptions/SubscriptionsTile";
 import { SettingsSheet } from "./SettingsSheet";
 import { TransactionList } from "./TransactionList";
 import { WeeklyBalanceCard } from "./WeeklyBalanceCard";
@@ -87,6 +88,8 @@ export function Dashboard() {
           <p className="mt-1.5 text-lg font-extrabold text-slate-900 tabular-nums">{formatMXN(owed)}</p>
         </div>
       </Link>
+
+      <SubscriptionsTile />
 
       <InflationAlerts products={state.products} />
 

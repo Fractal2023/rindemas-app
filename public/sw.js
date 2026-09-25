@@ -12,12 +12,12 @@
  *
  * Bump VERSION to force every client to drop old caches.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const PAGES = `rindemas-pages-${VERSION}`;
 const ASSETS = `rindemas-assets-${VERSION}`;
 const RSC = `rindemas-rsc-${VERSION}`;
 
-const ROUTES = ["/app", "/app/precios", "/app/deudas", "/app/reportes", "/"];
+const ROUTES = ["/app", "/app/precios", "/app/deudas", "/app/reportes", "/app/suscripciones", "/"];
 const STATIC_FILES = [
   "/manifest.webmanifest",
   "/icon.svg",

@@ -53,3 +53,9 @@ La prueba gratis se activa localmente (se guarda en `rindemas_data.settings.plan
 - `lib/voice/speech.ts` — envoltorio de la Web Speech API (`es-MX`). Usa reconocimiento **en el dispositivo** (`processLocally`, Chrome reciente) cuando está disponible: ese modo funciona sin internet y el audio no sale del celular. Si no, usa el dictado en línea del navegador (Google/Apple), que necesita internet; la app pide consentimiento una vez (`settings.voiceCloudConsent`, se puede revocar en Ajustes → Privacidad).
 - UI: micrófono en el registro rápido (`components/voice/VoiceCapture.tsx`) y botón flotante en `/app` (`VoiceFab.tsx`, oculto si el navegador no soporta dictado).
 - **Exclusivo de PRO**: se valida con `planStatus(settings.plan).isPro` (una prueba vencida cuenta como Gratuito). En Plan Gratuito los micrófonos llevan corona y abren `VoiceProGate.tsx`, que lleva a la pantalla de planes (`ProSheet` con `reason="voice"`).
+
+## Suscripciones (PRO)
+
+- Ruta `/app/suscripciones` (acceso desde Inicio y Deudas). En Plan Gratuito muestra un paywall que abre `ProSheet` con `reason="subscriptions"`.
+- `lib/subscriptions.ts` — store propio en LocalStorage con la clave `rindemas_subscriptions`: alta, cancelar, reactivar, "me la quedo" (la prueba pasa a activa) y eliminar. Resumen mensual/anual, próximo cobro y semáforo de pruebas gratis (faltan 3 días = amarillo; 2, 1 o 0 = rojo). "Ir a cancelar" usa el link o la nota guardada.
+- Se incluye en el respaldo JSON, en "Restablecer datos demo" y en "Eliminar definitivamente". El service worker precachea la ruta (`VERSION = "v2"`).

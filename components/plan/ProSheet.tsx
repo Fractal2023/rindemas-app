@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { BellRing, Check, Cloud, Crown, FileDown, Mic, Palette, PiggyBank, Sparkles } from "lucide-react";
+import { BellRing, CalendarClock, Check, Cloud, Crown, FileDown, Mic, Palette, PiggyBank, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { celebrate } from "@/lib/celebrate";
@@ -13,6 +13,7 @@ import { ThemeSwatch } from "./ThemeSwatch";
 
 const BENEFITS = [
   { icon: Mic, title: "Registro de compras por voz", text: "Dicta “dos jabones de 30 pesos” y el formulario se llena solo" },
+  { icon: CalendarClock, title: "Gestor de suscripciones", text: "Te avisamos antes de que una prueba gratis se cobre" },
   { icon: Palette, title: "4 temas visuales exclusivos", text: "Oscuro Neón, Terracota, Azul Ejecutivo y Morado Menta" },
   { icon: BellRing, title: "Alertas de precio personalizadas", text: "Avisos cuando tus productos clave suban" },
   { icon: PiggyBank, title: "Metas de ahorro por quincena", text: "Aparta para la colegiatura, el gas o las vacaciones" },
@@ -21,7 +22,7 @@ const BENEFITS = [
 ];
 
 /** Which PRO feature brought the user here (highlighted at the top). */
-export type ProReason = "voice";
+export type ProReason = "voice" | "subscriptions";
 
 interface ProSheetProps {
   open: boolean;
@@ -131,6 +132,18 @@ function ProContent({ pendingTheme, reason, onClose }: { pendingTheme?: ThemeId;
           </span>
           <p className="text-sm text-slate-700">
             Con PRO anotas tus compras <b className="text-slate-900">hablando</b>: dices el producto y el precio, y solo confirmas.
+          </p>
+        </div>
+      )}
+
+      {reason === "subscriptions" && (
+        <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white">
+            <CalendarClock className="size-5" />
+          </span>
+          <p className="text-sm text-slate-700">
+            Con PRO ves cuánto pagas en <b className="text-slate-900">suscripciones</b> y te avisamos antes de que una prueba gratis
+            se convierta en cobro.
           </p>
         </div>
       )}

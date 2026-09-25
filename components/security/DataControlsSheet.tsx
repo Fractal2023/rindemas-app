@@ -66,7 +66,7 @@ function DataControls({ onWiped }: { onWiped: () => void }) {
           <TriangleAlert className="size-4" /> Eliminar definitivamente
         </p>
         <p className="mt-1 text-xs text-slate-600">
-          Se borran todos tus gastos, precios, deudas, ajustes y tu PIN de este dispositivo. No se puede deshacer. Te recomendamos
+          Se borran todos tus gastos, precios, deudas, suscripciones, ajustes y tu PIN de este dispositivo. No se puede deshacer. Te recomendamos
           descargar un respaldo antes.
         </p>
         <label className="mt-3 block">

@@ -99,6 +99,8 @@ export function longToday(now = new Date()) {
 export function initials(name: string) {
   return name
     .split(/\s+/)
+    // Skip words that don't start with a letter or digit, e.g. "(prueba" or "+".
+    .map((w) => w.replace(/^[^\p{L}\p{N}]+/u, ""))
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
